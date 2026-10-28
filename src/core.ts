@@ -11,6 +11,8 @@ import { renderButton } from './presentations/button.js';
 import { renderFloating } from './presentations/floating.js';
 import { renderTab } from './presentations/tab.js';
 import { renderInline } from './presentations/inline.js';
+import { TabDrawer } from './presentations/tab-drawer.js';
+import { ButtonDialog } from './presentations/button-dialog.js';
 import type { ReservationComponent, ReservationComponentOptions, WidgetMode } from './types.js';
 const presentations = {
   button: renderButton,
@@ -57,6 +59,8 @@ class Instance implements ReservationWidget {
   private root: ShadowRoot | null = null;
   private trigger: HTMLButtonElement | null = null;
   private dialog: HTMLDialogElement | null = null;
+  private drawer: TabDrawer | null = null;
+  private buttonDialog: ButtonDialog | null = null;
   private frame: HTMLIFrameElement | null = null;
   private inline: HTMLDivElement | null = null;
   private frameCleanup: (() => void) | null = null;
@@ -118,6 +122,10 @@ class Instance implements ReservationWidget {
     this.syncVisibility();
   }
   private readonly onTrigger = () => {
+    if (this.drawer && this.dialog?.open && !this.drawer.isClosing) {
+      this.finishClose('api', true);
+      return;
+    }
     if (!this.open()) {
       const url = `${this.config.baseUrl}/menu/${encodeURIComponent(this.config.restaurant)}/reserve/`;
       this.view.open(url, '_blank', 'noopener,noreferrer');
@@ -128,7 +136,7 @@ class Instance implements ReservationWidget {
     const node = this.inline ?? this.trigger;
     node?.classList.toggle('mobile-hidden', !this.visible());
     if (!this.visible()) {
-      this.finishClose('update', false);
+      this.finishClose('update', false, true);
       if (this.inline) this.removeFrame();
     } else if (this.inline && !this.frame) this.mountFrame(this.inline, true);
   }
@@ -138,10 +146,15 @@ class Instance implements ReservationWidget {
     this.frame?.remove();
     this.frame = null;
   }
-  private mountFrame(container: HTMLElement, inline: boolean): void {
+  private mountFrame(
+    container: HTMLElement,
+    inline: boolean,
+    fallbackContainer: HTMLElement = container,
+  ): void {
     const c = this.config;
     const copy = labels[c.language];
     const frame = this.doc.createElement('iframe');
+    frame.inert = Boolean(this.buttonDialog);
     this.frame = frame;
     frame.title = copy.reserve;
     frame.referrerPolicy = 'no-referrer';
@@ -168,47 +181,76 @@ class Instance implements ReservationWidget {
       const type = (event.data as { type?: unknown }).type;
       if (type === 'menueqr:reservation:ready' && !ready) {
         ready = true;
+        this.drawer?.loaded();
+        this.buttonDialog?.loaded(true);
         fallback.remove();
         container.dataset.ready = 'true';
         this.notify(this.config.onReady);
       } else if (type === 'menueqr:reservation:close' && !inline) this.finishClose('frame', true);
     };
     this.view.addEventListener('message', message);
+    const loaded = () => {
+      if (this.frame === frame) {
+        this.drawer?.loaded();
+        this.buttonDialog?.loaded();
+      }
+    };
+    frame.addEventListener('load', loaded);
     this.frameCleanup = () => {
       this.view.removeEventListener('message', message);
+      frame.removeEventListener('load', loaded);
       fallback.remove();
       delete container.dataset.ready;
     };
     // Install the message listener before navigation: cached pages can become ready immediately.
-    container.append(frame, fallback);
-    frame.src = frameUrl(c, this.view.location.origin);
+    frame.src = frameUrl(c, this.view.location.origin, Boolean(this.drawer));
+    container.append(frame);
+    fallbackContainer.append(fallback);
   }
   open(): boolean {
     if (this.destroyed || this.transitioning || !this.visible()) return false;
     if (this.inline) return Boolean(this.frame);
-    if (this.dialog?.open) return true;
+    if (this.dialog?.open) {
+      if (this.drawer?.isClosing) this.drawer.show();
+      if (this.buttonDialog?.isClosing) this.buttonDialog.show();
+      return true;
+    }
     if (
       !this.root ||
       !this.trigger ||
       typeof this.view.HTMLDialogElement?.prototype.showModal !== 'function'
     )
       return false;
-    const dialog = this.doc.createElement('dialog');
-    const close = this.doc.createElement('button');
+    this.drawer =
+      this.config.mode === 'tab'
+        ? new TabDrawer(this.root, this.trigger, labels[this.config.language].close)
+        : null;
+    this.buttonDialog = this.config.mode === 'button' ? new ButtonDialog(this.trigger) : null;
+    const dialog =
+      this.drawer?.dialog ?? this.buttonDialog?.dialog ?? this.doc.createElement('dialog');
+    const close = this.drawer ? this.trigger : this.doc.createElement('button');
     dialog.id = this.id;
     dialog.dataset.mode = this.config.mode;
     dialog.dataset.side = this.config.side;
     dialog.setAttribute('aria-label', labels[this.config.language].reserve);
-    close.className = 'close';
-    close.type = 'button';
-    close.textContent = '×';
-    close.setAttribute('aria-label', labels[this.config.language].close);
-    close.addEventListener('click', () => this.finishClose('api', true));
+    if (!this.drawer) {
+      close.className = 'close';
+      close.type = 'button';
+      close.textContent = '×';
+      close.setAttribute('aria-label', labels[this.config.language].close);
+      close.addEventListener('click', () => this.finishClose('api', true));
+      dialog.append(close);
+    }
     const cancel = (event: Event) => {
       event.preventDefault();
       this.finishClose('escape', true);
     };
     const backdrop = (event: MouseEvent) => {
+      if (this.drawer) {
+        if (event.target === dialog || event.target === this.drawer.scrim)
+          this.finishClose('backdrop', true);
+        return;
+      }
       if (event.target !== dialog) return;
       const r = dialog.getBoundingClientRect();
       if (
@@ -219,11 +261,10 @@ class Instance implements ReservationWidget {
       )
         this.finishClose('backdrop', true);
     };
-    const nativeClose = () => this.finishClose('api', true);
+    const nativeClose = () => this.finishClose('api', true, true);
     dialog.addEventListener('cancel', cancel);
     dialog.addEventListener('click', backdrop);
     dialog.addEventListener('close', nativeClose);
-    dialog.append(close);
     this.root.append(dialog);
     this.dialog = dialog;
     this.position();
@@ -238,20 +279,26 @@ class Instance implements ReservationWidget {
     };
     try {
       dialog.showModal();
-      this.mountFrame(dialog, false);
-      this.trigger.disabled = true;
+      this.mountFrame(this.drawer?.content ?? dialog, false, this.drawer?.panel ?? dialog);
+      this.drawer?.show();
+      this.buttonDialog?.show();
+      this.trigger.disabled = !this.drawer;
       this.trigger.setAttribute('aria-expanded', 'true');
       this.position();
       close.focus();
       this.notify(this.config.onOpen);
       return true;
     } catch (error) {
-      this.finishClose('api', false);
+      this.finishClose('api', false, true);
       throw error;
     }
   }
   private readonly position = () => {
-    if (!this.dialog || !this.trigger) return;
+    if (!this.dialog || !this.trigger || this.drawer) return;
+    if (this.buttonDialog) {
+      this.buttonDialog.position();
+      return;
+    }
     const r = this.trigger.getBoundingClientRect();
     const bottom = Math.max(12, this.view.innerHeight - r.top + 12);
     const x = Math.max(
@@ -275,11 +322,22 @@ class Instance implements ReservationWidget {
       this.view.console.error('MenüQR: A widget callback failed.', error);
     }
   }
-  private finishClose(reason: CloseReason, restoreFocus: boolean): void {
+  private finishClose(reason: CloseReason, restoreFocus: boolean, immediate = false): void {
     const dialog = this.dialog;
     if (!dialog) return;
+    const animated = this.drawer ?? this.buttonDialog;
+    if (animated && !immediate && dialog.open) {
+      animated.close(() => {
+        if (this.dialog === dialog) this.finishClose(reason, restoreFocus, true);
+      });
+      return;
+    }
     this.dialog = null;
     this.removeFrame();
+    this.drawer?.dispose();
+    this.drawer = null;
+    this.buttonDialog?.dispose();
+    this.buttonDialog = null;
     this.overlayCleanup?.();
     this.overlayCleanup = null;
     if (dialog.open) dialog.close();
@@ -331,7 +389,7 @@ class Instance implements ReservationWidget {
     }
   }
   private teardown(reason: CloseReason): void {
-    this.finishClose(reason, false);
+    this.finishClose(reason, false, true);
     this.removeFrame();
     this.media?.removeEventListener('change', this.onMedia);
     this.media = null;

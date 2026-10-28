@@ -42,6 +42,8 @@ const widget = mountReservationButton(element, {
 
 Close reasons: `api`, `escape`, `backdrop`, `frame`, `update`, `destroy`.
 
+The Tab component slides from its configured side and turns its launcher into a close button. On small screens it opens a full-screen sheet with a close button in the top-right corner, clear of the form and its footer. Reduced-motion preferences use a short fade instead of movement. The ordinary Button opens a centered dialog from the launcher's direction, or a full-screen sheet on mobile. Its press feedback and icon movement respect reduced-motion preferences too. `close()` animates the Button and Tab exits; `isOpen` stays true until the exit finishes, then `onClose` fires and launcher focus returns. Calling `open()` during that exit reverses it without reloading the form or discarding the draft. `update()` and `destroy()` clean up immediately, including during a transition.
+
 Floating and Tab hosts are portaled to `document.body` to avoid clipping; their ownership still belongs to the original target. Clean them up during client navigation.
 
 ## React and Next.js

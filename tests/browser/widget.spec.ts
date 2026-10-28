@@ -24,7 +24,8 @@ test('four layouts load the real cross-origin fixture, close and restore focus',
       .poll(() => page.evaluate(() => window.harness.events().filter((e) => e === 'ready').length))
       .toBeGreaterThan(0);
     if (mode !== 'inline') {
-      await page.frameLocator('iframe').getByRole('button', { name: 'Close preview' }).click();
+      if (mode === 'tab') await page.getByRole('button', { name: 'Close', exact: true }).click();
+      else await page.frameLocator('iframe').getByRole('button', { name: 'Close preview' }).click();
       await expect(page.locator('dialog')).toHaveCount(0);
       await expect(
         page.getByRole('button', {
@@ -98,6 +99,7 @@ test('closing one of two instances preserves the other scroll lock', async ({ pa
   await page.evaluate(() => window.harness.close());
   expect(await page.evaluate(() => document.body.style.overflow)).toBe('hidden');
   await page.evaluate(() => window.harness.closeSecond());
+  await expect(page.locator('dialog')).toHaveCount(0);
   expect(await page.evaluate(() => document.body.style.overflow)).toBe('clip');
 });
 
@@ -129,6 +131,11 @@ test('mobile overlays fill the viewport without horizontal overflow', async ({ p
       window.harness.mount({ mode });
       window.harness.open();
     }, mode);
+    await page.locator('dialog').evaluate(async (dialog) => {
+      await Promise.allSettled(
+        dialog.getAnimations({ subtree: true }).map((animation) => animation.finished),
+      );
+    });
     const box = await page.locator('dialog').boundingBox();
     expect(box?.x).toBeCloseTo(0);
     expect(box?.width).toBeCloseTo(390);
@@ -207,6 +214,7 @@ test('the sandbox uses the SDK and generates the versioned AI prompt without pro
   await frame.getByRole('button', { name: 'Continue', exact: true }).click();
   await frame.getByLabel('Name', { exact: false }).fill('Preview Guest');
   await frame.getByLabel('Email', { exact: false }).fill('guest@example.invalid');
+  await frame.getByLabel('Phone', { exact: false }).fill('+436601234567');
   await frame.getByRole('checkbox').check();
   await frame.getByRole('button', { name: 'Preview request' }).click();
   await expect(frame.getByRole('heading', { name: 'Preview only.' })).toBeVisible();
@@ -290,6 +298,7 @@ test('contact step keeps drafts and notes while editing and makes no booking req
   await frame.getByRole('button', { name: 'Preview request' }).click();
   await expect(frame.getByRole('heading', { name: 'Contact details' })).toBeVisible();
   await frame.getByLabel('Email', { exact: false }).fill('guest@example.invalid');
+  await frame.getByLabel('Phone', { exact: false }).fill('+436601234567');
   await frame.getByRole('checkbox').check();
   await frame.getByRole('button', { name: 'Preview request' }).click();
   await expect(frame.getByRole('heading', { name: 'Preview only.' })).toBeVisible();
