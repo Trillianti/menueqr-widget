@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>MenüQR — Reservation preview</title>
+    <link rel="stylesheet" href="/fixture/fonts.css" />
+    <link rel="stylesheet" href="/fixture/preview.css" />
+    <script type="module" src="/fixture/preview.js"></script>
+  </head>
+  <body>
+    <main class="mw-shell">
+      <header class="mw-header">
+        <div>
+          <p class="mw-restaurant">Bistro Lumi</p>
+          <h1 id="heading" tabindex="-1" data-copy="title"></h1>
+        </div>
+        <button type="button" class="mw-icon-button" id="close" hidden>
+          <svg width="21" height="21" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m6 6 12 12M18 6 6 18" />
+          </svg>
+        </button>
+      </header>
+      <div class="mw-content">
+        <div id="time-step" class="mw-fields">
+          <section>
+            <p class="mw-field-label" id="guests-label" data-copy="guests"></p>
+            <div class="mw-counter" role="group" aria-labelledby="guests-label">
+              <button type="button" id="minus" class="mw-icon-button">
+                <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M5 12h14" />
+                </svg>
+              </button>
+              <output id="guest-count" aria-live="polite"></output>
+              <button type="button" id="plus" class="mw-icon-button">
+                <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M5 12h14M12 5v14" />
+                </svg>
+              </button>
+            </div>
+          </section>
+          <section>
+            <label for="date" data-copy="date"></label>
+            <div class="mw-date-options">
+              <button type="button" id="today" data-copy="today" aria-pressed="true"></button>
+              <button
+                type="button"
+                id="tomorrow"
+                data-copy="tomorrow"
+                aria-pressed="false"
+              ></button>
+              <label class="mw-date-control"
+                ><span data-copy="chooseDate"></span><input id="date" type="date"
+              /></label>
+            </div>
+            <p id="date-caption" class="mw-date-caption"></p>
+          </section>
+          <section>
+            <p class="mw-field-label" id="time-label" data-copy="time"></p>
+            <div class="mw-times" id="times" role="group" aria-labelledby="time-label"></div>
+          </section>
+        </div>
+        <section id="contact-step" hidden>
+          <div class="mw-selection">
+            <span class="selection-summary"></span>
+            <button type="button" id="edit" class="mw-text-button">
+              <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M19 12H5m7-7-7 7 7 7" /></svg
+              ><span data-copy="edit"></span>
+            </button>
+          </div>
+          <form id="contact" class="mw-fields" autocomplete="off">
+            <div>
+              <label for="name"><span data-copy="name"></span> *</label
+              ><input
+                id="name"
+                name="preview-name"
+                type="text"
+                required
+                minlength="2"
+                maxlength="120"
+                autocomplete="off"
+              />
+            </div>
+            <div>
+              <label for="email"><span data-copy="email"></span> *</label
+              ><input
+                id="email"
+                name="preview-email"
+                type="email"
+                required
+                maxlength="160"
+                autocomplete="off"
+              />
+            </div>
+            <div>
+              <label for="phone"
+                ><span data-copy="phone"></span>
+                <span class="mw-optional" data-copy="optional"></span></label
+              ><input
+                id="phone"
+                name="preview-phone"
+                type="tel"
+                maxlength="32"
+                autocomplete="off"
+              />
+            </div>
+            <button type="button" id="add-notes" class="mw-text-button mw-notes-button">
+              <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M5 12h14M12 5v14" /></svg
+              ><span data-copy="addNotes"></span>
+            </button>
+            <div id="notes-field" hidden>
+              <label for="notes" data-copy="notes"></label
+              ><textarea id="notes" rows="3" maxlength="1200"></textarea>
+            </div>
+            <div class="mw-policy">
+              <details>
+                <summary data-copy="rules"></summary>
+                <div><p data-copy="previewBody"></p></div>
+              </details>
+              <label class="mw-accept"
+                ><input id="accepted" type="checkbox" required /><span data-copy="accept"></span
+              ></label>
+            </div>
+          </form>
+        </section>
+        <section id="receipt" class="mw-success" aria-live="polite" hidden>
+          <div class="mw-success-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m5 12 4 4L19 6" />
+            </svg>
+          </div>
+          <p data-copy="previewBody"></p>
+          <strong>PREVIEW</strong>
+          <button id="reset" type="button" class="mw-text-button" data-copy="reset"></button>
+        </section>
+      </div>
+      <footer class="mw-footer">
+        <p class="mw-summary selection-summary"></p>
+        <button type="button" id="next" class="mw-primary" disabled>
+          <span data-copy="next"></span
+          ><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 12h14m-7-7 7 7-7 7" />
+          </svg>
+        </button>
+        <button
+          type="submit"
+          form="contact"
+          id="submit"
+          class="mw-primary"
+          data-copy="submit"
+          hidden
+        ></button>
+        <p class="mw-powered">
+          <span data-copy="preview"></span> · Powered by
+          <a href="https://www.menueqr.de/" target="_blank" rel="noopener noreferrer">MenüQR</a>
+        </p>
+      </footer>
+    </main>
+  </body>
+</html>

@@ -1,18 +1,21 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { mountReservations, type ReservationWidget, type WidgetLanguage } from '@menueqr/widget';
+import {
+  mountReservationButton,
+  type ReservationComponent,
+  type WidgetLanguage,
+} from '@menueqr/widget';
 
 // Nuxt: the import is SSR-safe; mounting happens only on the client.
 const props = defineProps<{ restaurant: string; language?: WidgetLanguage }>();
 const target = ref<HTMLElement | null>(null);
-let widget: ReservationWidget | undefined;
+let widget: ReservationComponent | undefined;
 
 onMounted(() => {
   if (!target.value) return;
-  widget = mountReservations(target.value, {
+  widget = mountReservationButton(target.value, {
     restaurant: props.restaurant,
     language: props.language ?? 'de',
-    mode: 'button',
   });
 });
 

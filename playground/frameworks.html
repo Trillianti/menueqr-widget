@@ -7,6 +7,15 @@
   <body>
     <h1>Framework lifecycle smoke</h1>
     <button id="remove-react">Unmount React</button><button id="remove-vue">Unmount Vue</button>
+    <label
+      >React component
+      <select id="react-component">
+        <option value="button">Button</option>
+        <option value="floating">Floating</option>
+        <option value="tab">Tab</option>
+        <option value="inline">Inline</option>
+      </select></label
+    ><button id="update-react">Change restaurant</button>
     <div id="react-root"></div>
     <div id="vue-root"></div>
     <script type="module" src="/frameworks.tsx"></script>

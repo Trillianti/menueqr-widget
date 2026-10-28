@@ -1,4 +1,5 @@
 import { languages, type ReservationWidgetOptions, type WidgetConfiguration } from './types.js';
+import { resolveRestaurantSlug } from './restaurant.js';
 export const MENUEQR_ORIGIN = 'https://www.menueqr.de';
 function fail(message: string): never {
   throw new TypeError(`MenüQR: ${message}`);
@@ -28,8 +29,7 @@ export function normalizeOptions(input: ReservationWidgetOptions): WidgetConfigu
     mobile = true,
     icon = true,
   } = input;
-  if (typeof restaurant !== 'string' || !/^[a-zA-Z0-9_-]{1,160}$/.test(restaurant))
-    fail('restaurant must be a public restaurant slug.');
+  const slug = resolveRestaurantSlug(restaurant);
   if (!['button', 'floating', 'tab', 'inline'].includes(mode))
     fail('Unknown mode. Use button, floating, tab or inline.');
   if (!(languages as readonly string[]).includes(language))
@@ -65,7 +65,7 @@ export function normalizeOptions(input: ReservationWidgetOptions): WidgetConfigu
   )
     fail('baseUrl must be the MenüQR production origin or a loopback HTTP(S) origin.');
   return Object.freeze({
-    restaurant,
+    restaurant: slug,
     mode,
     language,
     color: color.toLowerCase(),

@@ -1,9 +1,8 @@
-import { mountReservations } from '@menueqr/widget';
+import { mountReservationButton } from '@menueqr/widget';
 
 // Add <div id="reservations"></div> to your HTML. Load through a module bundler.
-const widget = mountReservations('#reservations', {
+const widget = mountReservationButton('#reservations', {
   restaurant: 'your-restaurant-slug',
-  mode: 'floating',
   language: 'de',
 });
 

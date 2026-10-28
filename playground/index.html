@@ -9,7 +9,7 @@
   <body>
     <header class="masthead">
       <a href="/" class="brand">MenüQR <span>Widget</span></a
-      ><span class="environment"><i></i> Local sandbox</span
+      ><span class="environment"><i></i> <span id="environment">Local sandbox</span></span
       ><a
         href="https://github.com/Trillianti/menueqr-widget"
         target="_blank"
@@ -25,12 +25,27 @@
           <p>This is the real SDK, connected to a local preview form. No bookings are sent.</p>
         </div>
         <form id="settings">
-          <label for="mode">Presentation</label
-          ><select id="mode">
-            <option value="button">Button</option>
-            <option value="floating">Floating panel</option>
-            <option value="tab">Side tab</option>
-            <option value="inline">Inline form</option>
+          <label for="restaurant">Restaurant link or slug</label>
+          <input
+            id="restaurant"
+            type="text"
+            placeholder="https://www.menueqr.de/menu/bistro-lumi/"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <label class="checkbox"
+            ><input id="live" type="checkbox" /> Preview this restaurant live</label
+          >
+          <p class="connection-hint">
+            Local preview uses sample data. Live preview requires this website to be allowed in
+            MenüQR.
+          </p>
+          <label for="component">Component</label
+          ><select id="component">
+            <option value="button">ReservationButton</option>
+            <option value="floating">ReservationFloating</option>
+            <option value="tab">ReservationTab</option>
+            <option value="inline">ReservationInline</option>
           </select>
           <div class="columns">
             <div>
@@ -122,7 +137,7 @@
         </div>
         <div class="codebox">
           <div class="codebar">
-            <span>JavaScript / TypeScript</span
+            <span id="code-language">JavaScript / TypeScript</span
             ><button id="copy-code" type="button">Copy code</button>
           </div>
           <pre id="code"></pre>
@@ -140,7 +155,8 @@
       </section>
     </main>
     <footer>
-      MenüQR · MVP 0.1.0 <span>Resize this browser to test the actual mobile breakpoint.</span>
+      <span id="version">MenüQR Widget</span
+      ><span>Resize this browser to test the actual mobile breakpoint.</span>
     </footer>
     <script type="module" src="/main.ts"></script>
   </body>

@@ -8,6 +8,26 @@ const cjs = require('../dist/index.cjs');
 const prompt = await import('../dist/prompt.js');
 const cjsElement = require('../dist/element.cjs');
 const cjsPrompt = require('../dist/prompt.cjs');
+for (const kind of ['Button', 'Floating', 'Tab', 'Inline']) {
+  const name = `mountReservation${kind}`;
+  const esmPart = await import(`../dist/components/${kind.toLowerCase()}.js`);
+  const cjsPart = require(`../dist/components/${kind.toLowerCase()}.cjs`);
+  assert.equal(typeof esm[name], 'function');
+  assert.equal(esm[name], esmPart[name]);
+  assert.equal(cjs[name], cjsPart[name]);
+}
+const { createElement } = await import('react');
+const { renderToString } = await import('react-dom/server');
+const react = await import('../dist/react.js');
+for (const name of [
+  'ReservationButton',
+  'ReservationFloating',
+  'ReservationTab',
+  'ReservationInline',
+]) {
+  assert.equal(typeof react[name], 'function');
+  assert.match(renderToString(createElement(react[name], { restaurant: 'example' })), /<div/);
+}
 assert.equal(typeof esm.mountReservations, 'function');
 assert.equal(typeof cjs.mountReservations, 'function');
 assert.equal(element.defineReservationsElement(), false);

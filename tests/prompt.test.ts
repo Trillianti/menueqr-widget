@@ -7,11 +7,12 @@ import {
 it('generates instructions for the actual package API with no development origin or secrets', () => {
   const input = {
     restaurant: 'example-restaurant',
-    mode: 'floating' as const,
+    component: 'floating' as const,
     language: 'en' as const,
   };
   const prompt = createIntegrationPrompt(input);
-  expect(prompt).toContain('mountReservations');
+  expect(prompt).toContain('mountReservationFloating');
+  expect(prompt).not.toContain('"mode"');
   expect(prompt).toContain(releaseInstallSource);
   expect(prompt).toContain('destroy()');
   expect(prompt).not.toContain('127.0.0.1');

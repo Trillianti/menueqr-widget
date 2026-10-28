@@ -10,7 +10,11 @@ import {
   PLATFORM_ID,
   ViewChild,
 } from '@angular/core';
-import { mountReservations, type ReservationWidget, type WidgetLanguage } from '@menueqr/widget';
+import {
+  mountReservationButton,
+  type ReservationComponent,
+  type WidgetLanguage,
+} from '@menueqr/widget';
 
 @Component({
   selector: 'app-reservations',
@@ -22,14 +26,13 @@ export class ReservationsComponent implements AfterViewInit, OnChanges, OnDestro
   @Input() language: WidgetLanguage = 'de';
   @ViewChild('target', { static: true }) target!: ElementRef<HTMLElement>;
   private platformId = inject(PLATFORM_ID);
-  private widget?: ReservationWidget;
+  private widget?: ReservationComponent;
 
   ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-    this.widget = mountReservations(this.target.nativeElement, {
+    this.widget = mountReservationButton(this.target.nativeElement, {
       restaurant: this.restaurant,
       language: this.language,
-      mode: 'button',
     });
   }
 

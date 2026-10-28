@@ -1,6 +1,19 @@
-import { mountReservations } from './index.js';
+import {
+  mountReservations,
+  mountReservationButton,
+  mountReservationFloating,
+  mountReservationTab,
+  mountReservationInline,
+} from './index.js';
+const components = {
+  button: mountReservationButton,
+  floating: mountReservationFloating,
+  tab: mountReservationTab,
+  inline: mountReservationInline,
+};
 import type {
   ReservationWidget,
+  ReservationComponent,
   ReservationWidgetOptions,
   WidgetMode,
   WidgetLanguage,
@@ -11,11 +24,11 @@ export interface ReservationElement extends HTMLElement {
   close(): void;
 }
 /** Explicit registration prevents module-level browser globals from breaking SSR imports. */
-export function defineReservationsElement(name = 'menueqr-reservations'): boolean {
+function registerElement(name: string, component?: WidgetMode): boolean {
   if (typeof window === 'undefined' || !window.customElements) return false;
   if (window.customElements.get(name)) return false;
   class ReservationsElement extends HTMLElement {
-    private instance: ReservationWidget | null = null;
+    private instance: ReservationWidget | ReservationComponent | null = null;
     private pending = false;
     static get observedAttributes() {
       return [
@@ -32,7 +45,7 @@ export function defineReservationsElement(name = 'menueqr-reservations'): boolea
         'inline-height',
         'nonce',
         'base-url',
-      ];
+      ].filter((attribute) => !component || attribute !== 'mode');
     }
     private options(): ReservationWidgetOptions {
       const result: ReservationWidgetOptions = {
@@ -42,7 +55,7 @@ export function defineReservationsElement(name = 'menueqr-reservations'): boolea
         const value = this.getAttribute(attribute);
         if (value !== null) Object.assign(result, { [key]: value });
       };
-      set('mode', 'mode');
+      if (!component) set('mode', 'mode');
       set('language', 'language');
       set('color', 'color');
       set('label', 'label');
@@ -100,7 +113,7 @@ export function defineReservationsElement(name = 'menueqr-reservations'): boolea
         // Attribute removal restores defaults instead of retaining a previous value.
         if (this.instance)
           this.instance.update({
-            mode: 'button' as WidgetMode,
+            ...(!component ? { mode: 'button' as WidgetMode } : {}),
             language: 'de' as WidgetLanguage,
             color: '#ff730a',
             label: '',
@@ -114,7 +127,10 @@ export function defineReservationsElement(name = 'menueqr-reservations'): boolea
             baseUrl: 'https://www.menueqr.de',
             ...options,
           });
-        else this.instance = mountReservations(this, options);
+        else
+          this.instance = component
+            ? components[component](this, options)
+            : mountReservations(this, options);
       } catch (error) {
         this.dispatchEvent(
           new CustomEvent('menueqr:error', {
@@ -129,4 +145,27 @@ export function defineReservationsElement(name = 'menueqr-reservations'): boolea
   }
   window.customElements.define(name, ReservationsElement);
   return true;
+}
+
+/** @deprecated Use the separate custom elements. */
+export function defineReservationsElement(name = 'menueqr-reservations'): boolean {
+  return registerElement(name);
+}
+export function defineReservationButtonElement(name = 'menueqr-reservation-button'): boolean {
+  return registerElement(name, 'button');
+}
+export function defineReservationFloatingElement(name = 'menueqr-reservation-floating'): boolean {
+  return registerElement(name, 'floating');
+}
+export function defineReservationTabElement(name = 'menueqr-reservation-tab'): boolean {
+  return registerElement(name, 'tab');
+}
+export function defineReservationInlineElement(name = 'menueqr-reservation-inline'): boolean {
+  return registerElement(name, 'inline');
+}
+export function defineReservationElements(): void {
+  defineReservationButtonElement();
+  defineReservationFloatingElement();
+  defineReservationTabElement();
+  defineReservationInlineElement();
 }

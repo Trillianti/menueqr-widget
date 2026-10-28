@@ -1,6 +1,6 @@
 {
   "name": "@menueqr/widget",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Framework-independent reservation widgets for MenüQR. Zero runtime dependencies, SSR-safe imports, typed lifecycle API.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -22,6 +22,31 @@
       "types": "./dist/prompt.d.ts",
       "import": "./dist/prompt.js",
       "require": "./dist/prompt.cjs"
+    },
+    "./button": {
+      "types": "./dist/components/button.d.ts",
+      "import": "./dist/components/button.js",
+      "require": "./dist/components/button.cjs"
+    },
+    "./floating": {
+      "types": "./dist/components/floating.d.ts",
+      "import": "./dist/components/floating.js",
+      "require": "./dist/components/floating.cjs"
+    },
+    "./tab": {
+      "types": "./dist/components/tab.d.ts",
+      "import": "./dist/components/tab.js",
+      "require": "./dist/components/tab.cjs"
+    },
+    "./inline": {
+      "types": "./dist/components/inline.d.ts",
+      "import": "./dist/components/inline.js",
+      "require": "./dist/components/inline.cjs"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.js",
+      "require": "./dist/react.cjs"
     }
   },
   "files": [
@@ -82,5 +107,13 @@
   },
   "allowScripts": {
     "esbuild@0.28.2": true
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
   }
 }

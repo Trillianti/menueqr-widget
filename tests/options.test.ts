@@ -40,7 +40,6 @@ describe('configuration boundary', () => {
   });
   it.each([
     { restaurant: '../escape' },
-    { restaurant: 'https://www.menueqr.de/menu/bistro/' },
     { restaurant: 'bistro', color: 'red' },
     { restaurant: 'bistro', offsetX: -1 },
     { restaurant: 'bistro', offsetY: 161 },

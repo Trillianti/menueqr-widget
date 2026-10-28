@@ -1,2 +1,2 @@
 /** Kept in sync by npm version; verified before packing. */
-export const WIDGET_VERSION = '0.1.0';
+export const WIDGET_VERSION = '0.2.0';

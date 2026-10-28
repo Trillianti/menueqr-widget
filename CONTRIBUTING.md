@@ -7,11 +7,13 @@ npm ci
 npm run dev
 ```
 
-Node.js 22.12+ or 24+ is required for the development toolchain. The SDK has no runtime dependencies.
+Node.js 22.12+ or 24+ is required for the development toolchain. The core SDK has no runtime dependencies; the React adapter uses an optional peer dependency.
 
 ## Layout
 
-- `src/` — typed SDK, options validation, isolated styles, custom element and AI prompt generator.
+- `src/components/` and `src/presentations/` — four separate JS components and rendering modules.
+- `src/react/` — optional React components sharing lifecycle hooks.
+- Other `src/` modules — shared core, validation, custom elements and prompt generator.
 - `playground/` — interactive editor plus browser/framework harnesses.
 - `scripts/fixture-server.mjs` — local cross-origin form; no accounts, database or real reservations.
 - `tests/` — unit and browser integration tests.

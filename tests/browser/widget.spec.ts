@@ -199,14 +199,130 @@ test('the sandbox uses the SDK and generates the versioned AI prompt without pro
   });
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Make it yours.' })).toBeVisible();
-  await page.selectOption('#mode', 'floating');
+  await page.selectOption('#component', 'floating');
   await page.getByRole('button', { name: 'Open', exact: true }).click();
   const frame = page.frameLocator('iframe');
+  await frame.getByRole('button', { name: '19:00', exact: true }).click();
+  await frame.getByRole('button', { name: 'Continue', exact: true }).click();
+  await frame.getByLabel('Name', { exact: false }).fill('Preview Guest');
+  await frame.getByLabel('Email', { exact: false }).fill('guest@example.invalid');
+  await frame.getByRole('checkbox').check();
   await frame.getByRole('button', { name: 'Preview request' }).click();
   await expect(frame.getByRole('heading', { name: 'Preview only.' })).toBeVisible();
+  const brand = frame.getByRole('link', { name: 'MenüQR', exact: true });
+  await expect(brand).toHaveAttribute('href', 'https://www.menueqr.de/');
+  await expect(brand).toHaveAttribute('target', '_blank');
+  await expect(brand).toHaveAttribute('rel', 'noopener noreferrer');
   await frame.getByRole('button', { name: 'Close preview' }).click();
   await page.selectOption('#integration', 'element');
   await page.getByRole('button', { name: 'Open', exact: true }).click();
   await expect(page.locator('iframe')).toHaveCount(1);
   expect(production).toEqual([]);
+});
+
+test('WordPress-style selection requires a time and resets it when date or party changes', async ({
+  page,
+}) => {
+  await page.evaluate(() => {
+    window.harness.mount();
+    window.harness.open();
+  });
+  const frame = page.frameLocator('iframe');
+  const next = frame.getByRole('button', { name: 'Continue', exact: true });
+  await expect(next).toBeDisabled();
+  await expect(frame.getByRole('button', { name: /^\d{2}:\d{2}$/ })).toHaveCount(9);
+  await frame.getByRole('button', { name: '19:00', exact: true }).click();
+  await expect(next).toBeEnabled();
+  await frame.getByRole('button', { name: 'More guests' }).click();
+  await expect(frame.locator('#guest-count')).toHaveText('3 guests');
+  await expect(next).toBeDisabled();
+  await frame.getByRole('button', { name: '19:30', exact: true }).click();
+  await frame.getByRole('button', { name: 'Tomorrow', exact: true }).click();
+  await expect(next).toBeDisabled();
+  await expect(frame.getByRole('button', { name: 'Tomorrow', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await frame.getByRole('button', { name: '20:00', exact: true }).click();
+  await expect(frame.locator('.mw-footer .selection-summary')).toContainText('3 guests');
+  await expect(frame.locator('.mw-footer .selection-summary')).toContainText('20:00');
+  const date = frame.getByLabel('Choose date', { exact: true });
+  const max = await date.getAttribute('max');
+  await date.fill(max!);
+  await expect(next).toBeDisabled();
+  await expect(frame.getByRole('button', { name: 'Tomorrow', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'false',
+  );
+});
+
+test('contact step keeps drafts and notes while editing and makes no booking request', async ({
+  page,
+}) => {
+  const writes: string[] = [];
+  const errors: string[] = [];
+  page.on('request', (request) => {
+    if (request.method() !== 'GET') writes.push(request.url());
+  });
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.evaluate(() => {
+    window.harness.mount();
+    window.harness.open();
+  });
+  const frame = page.frameLocator('iframe');
+  await frame.getByRole('button', { name: '19:00', exact: true }).click();
+  await frame.getByRole('button', { name: 'Continue', exact: true }).click();
+  await expect(frame.getByRole('heading', { name: 'Contact details' })).toBeFocused();
+  await frame.getByLabel('Name', { exact: false }).fill('Preview Guest');
+  await frame.getByRole('button', { name: 'Add a request' }).click();
+  await frame.getByLabel('Your request', { exact: true }).fill('Window table');
+  await frame.getByLabel('Your request', { exact: true }).fill('');
+  await expect(frame.getByLabel('Your request', { exact: true })).toBeVisible();
+  await frame.getByRole('button', { name: 'Change', exact: true }).click();
+  await expect(frame.getByRole('button', { name: '19:00', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await frame.getByRole('button', { name: 'Continue', exact: true }).click();
+  await expect(frame.getByLabel('Name', { exact: false })).toHaveValue('Preview Guest');
+  await expect(frame.getByLabel('Your request', { exact: true })).toBeVisible();
+  await frame.getByRole('button', { name: 'Preview request' }).click();
+  await expect(frame.getByRole('heading', { name: 'Contact details' })).toBeVisible();
+  await frame.getByLabel('Email', { exact: false }).fill('guest@example.invalid');
+  await frame.getByRole('checkbox').check();
+  await frame.getByRole('button', { name: 'Preview request' }).click();
+  await expect(frame.getByRole('heading', { name: 'Preview only.' })).toBeVisible();
+  expect(writes).toEqual([]);
+  expect(errors).toEqual([]);
+});
+
+test('the preview matches the German WordPress UI and keeps its footer visible', async ({
+  page,
+}) => {
+  await page.evaluate(() => {
+    window.harness.mount({ language: 'de', color: '#222222' });
+    window.harness.open();
+  });
+  const frame = page.frameLocator('iframe');
+  await expect(frame.getByRole('heading', { name: 'Tisch reservieren' })).toBeVisible();
+  await expect(frame.getByRole('link', { name: 'MenüQR', exact: true })).toHaveAttribute(
+    'href',
+    'https://www.menueqr.de/',
+  );
+  await expect(frame.getByRole('button', { name: 'Heute', exact: true })).toBeVisible();
+  await expect(frame.getByRole('button', { name: 'Morgen', exact: true })).toBeVisible();
+  await frame.getByRole('button', { name: '19:00', exact: true }).click();
+  const next = frame.getByRole('button', { name: 'Weiter', exact: true });
+  const colors = await next.evaluate((button) => ({
+    background: getComputedStyle(button).backgroundColor,
+    foreground: getComputedStyle(button).color,
+  }));
+  expect(colors).toEqual({ background: 'rgb(34, 34, 34)', foreground: 'rgb(255, 255, 255)' });
+  const button = await next.boundingBox();
+  const iframe = await page.locator('iframe').boundingBox();
+  expect(button!.y + button!.height).toBeLessThanOrEqual(iframe!.y + iframe!.height);
+  await next.click();
+  await expect(frame.getByRole('heading', { name: 'Kontaktdaten' })).toBeVisible();
+  await expect(frame.getByRole('link', { name: 'MenüQR', exact: true })).toBeVisible();
+  await expect(frame.getByLabel('E-Mail', { exact: false })).toBeVisible();
 });

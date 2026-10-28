@@ -1,72 +1,62 @@
-# Integration guide
+# Integration reference
 
-## Service setup
+## Restaurant setup
 
-1. Enable reservations and the reservation widget in the restaurant's MenüQR settings with an eligible subscription.
-2. Add the embedding website's **origin** to the allowed sites: for example `https://restaurant.example`, without a path. `www`, different ports and different schemes are distinct origins.
-3. Install a pinned release and mount using the public restaurant slug.
-4. Verify on the actual website over HTTPS. Use the local fixture for development; do not create production reservations as a test without restaurant approval.
+Enable reservations and the widget in the restaurant's MenüQR settings with an eligible subscription. Add the embedding website's origin, for example `https://restaurant.example`. Paths are not origins; `www`, ports and schemes are distinct.
 
-The backend enforces access, availability and reservation rules. A frontend option cannot grant access, approve a reservation or bypass an origin restriction. Receiving the form's `ready` message means the frame initialized, not that the service accepted a booking.
+Set `restaurant` to the public slug (`bistro-lumi`) or a MenüQR menu URL (`https://www.menueqr.de/menu/bistro-lumi/`). Links under `menueqr.de` and `www.menueqr.de` are accepted over HTTPS. Supported menu tab paths and query/fragment suffixes are normalized to the slug. Foreign hosts, credentials, internal dashboard links and private reservation links are rejected.
 
-## Lifecycle API
+No internal restaurant ID is necessary. The service independently enforces feature access, availability, website origins and acceptance. Knowing a slug does not grant management access. The frame's `ready` signal indicates initialization, not a successful reservation.
+
+## Separate components
+
+| Presentation | JS import path             | Mount function             | Custom element                 |
+| ------------ | -------------------------- | -------------------------- | ------------------------------ |
+| Button       | `@menueqr/widget/button`   | `mountReservationButton`   | `menueqr-reservation-button`   |
+| Floating     | `@menueqr/widget/floating` | `mountReservationFloating` | `menueqr-reservation-floating` |
+| Tab          | `@menueqr/widget/tab`      | `mountReservationTab`      | `menueqr-reservation-tab`      |
+| Inline       | `@menueqr/widget/inline`   | `mountReservationInline`   | `menueqr-reservation-inline`   |
+
+Each presentation has its own rendering module. They reuse the button primitive, iframe transport, validation and lifecycle. A mounted component cannot change its type via configuration: destroy/unmount it and mount the other component. Do not pass `mode` to these components.
+
+The root entry also exports all four mount functions. ESM and CommonJS entry points preserve module boundaries, sharing one lifecycle registry. Mounting a different component onto an occupied target throws; repeated mounts of the same component update its existing controller.
+
+## JS lifecycle
 
 ```ts
-import { mountReservations, type ReservationWidget } from '@menueqr/widget';
-
-const widget: ReservationWidget = mountReservations(element, {
-  restaurant: 'your-restaurant-slug',
+import { mountReservationButton } from '@menueqr/widget/button';
+const widget = mountReservationButton(element, {
+  restaurant: 'bistro-lumi',
   onOpen: () => console.log('Opened'),
   onReady: () => console.log('Form initialized'),
   onClose: ({ reason }) => console.log('Closed', reason),
 });
 ```
 
-- `open(): boolean`: opens an overlay, or returns whether an inline frame is present. Returns `false` if hidden, destroyed or native dialog support is unavailable. Repeated calls do not create another frame.
-- `close(): void`: closes an overlay and restores focus to its launcher. Inline forms stay visible.
-- `update(partial): void`: validates first. Invalid options throw without replacing the current view. A presentation change closes the current overlay and discards its in-frame draft. Updating only callbacks preserves the live frame.
-- `destroy(): void`: releases listeners, the iframe, DOM and this instance's scroll lock. Idempotent. Mount again to create a new instance; updating a destroyed controller throws.
-- `options`: immutable normalized configuration.
-- `isOpen`: `true` for an open overlay or a displayed inline frame. It does not indicate successful loading or booking.
+- `open(): boolean`: opens an overlay, or reports whether an inline frame is displayed. Returns false if hidden, destroyed or native dialog support is unavailable.
+- `close(): void`: closes an overlay and restores launcher focus. Inline stays displayed.
+- `update(partial): void`: validates before changing restaurant, language, appearance or callbacks. A view change closes the overlay and discards its in-frame draft. Updating only callbacks preserves the frame. Invalid configuration leaves the previous instance intact.
+- `destroy(): void`: releases the iframe, listeners, DOM and this instance's scroll lock. Safe to repeat. A destroyed controller cannot be updated.
+- `options`: immutable normalized configuration. The restaurant reference is resolved to its slug.
+- `isOpen`: whether an overlay or inline frame is displayed; it does not imply successful loading or booking.
 
 Close reasons: `api`, `escape`, `backdrop`, `frame`, `update`, `destroy`.
 
-The SDK appends its own host without removing existing target content. Floating and tab hosts are portaled to `document.body` to avoid clipped or transformed ancestors; their lifecycle still belongs to the target/controller. Always clean up during client navigation.
+Floating and Tab hosts are portaled to `document.body` to avoid clipping; their ownership still belongs to the original target. Clean them up during client navigation.
 
-## Browser / SSR behavior
+## React and Next.js
 
-Imports do not access browser globals. Mount after the page has a body and a connected HTML target, inside `useEffect`, `onMounted`, `onMount` or the equivalent client lifecycle. A missing target or a `file://` page produces a clear error.
+Import the separate components from `@menueqr/widget/react` inside a client component. React is an optional peer dependency for this adapter, never a dependency of the core JS API. Each component accepts the shared restaurant/style/callback props and optional `id`, `className`, `style` for its mounting div.
 
-Modern browsers with native `<dialog>`, Shadow DOM and `matchMedia().addEventListener` are the target. In browsers lacking native dialog support, clicking the launcher opens the restaurant's public reservation page in a new tab. An imperative `open()` returns `false`; use a normal reservation link as your own fallback if you use only a custom trigger.
+Prop changes update the existing controller; unmount releases it. Replacing the component type tears down the old presentation. Strict Mode mount/cleanup cycles are supported. Imports and server rendering do not mount a browser iframe.
 
-Server-rendered HTML cannot show an interactive iframe before hydration. Keep an ordinary link in your page if you need a no-JavaScript fallback:
+## Web Components
 
-```html
-<a href="https://www.menueqr.de/menu/your-restaurant-slug/reserve/">Reserve a table</a>
-```
+Register with `defineReservationButtonElement()`, `defineReservationFloatingElement()`, `defineReservationTabElement()`, `defineReservationInlineElement()` from `@menueqr/widget/element`. Each returns true on registration and false during SSR or if the name already exists. `defineReservationElements()` registers all four.
 
-## Web Component
+Attributes: `restaurant`, `language`, `color`, `label`, `side`, `offset-x`, `offset-y`, `mobile`, `icon`, `inline-height`, `nonce`, `base-url`. There is no supported `mode` attribute for these fixed components. Boolean values must be literal `"true"` / `"false"` strings. Numeric values are integer strings.
 
-```ts
-import { defineReservationsElement, type ReservationElement } from '@menueqr/widget/element';
-
-defineReservationsElement(); // true on registration; false if unavailable/already registered
-const element = document.querySelector<ReservationElement>('menueqr-reservations');
-element?.open();
-element?.close();
-```
-
-JavaScript option names map to attributes as follows:
-
-| Attributes                                                 | Values                                                   |
-| ---------------------------------------------------------- | -------------------------------------------------------- |
-| `restaurant`, `mode`, `language`, `color`, `label`, `side` | Same as JavaScript options                               |
-| `offset-x`, `offset-y`, `inline-height`                    | Numeric strings                                          |
-| `mobile`, `icon`                                           | Exactly `"true"` or `"false"`; presence alone is invalid |
-| `nonce`                                                    | CSP style nonce                                          |
-| `base-url`                                                 | Advanced local fixture origin only; see below            |
-
-Events bubble from the custom element:
+Changes are batched in a microtask. Attribute removal restores defaults. Removing the element destroys its controller. Invalid updates emit `menueqr:error` and preserve the previous instance.
 
 | Event           | `detail`                                |
 | --------------- | --------------------------------------- |
@@ -75,41 +65,34 @@ Events bubble from the custom element:
 | `menueqr:close` | `{ reason }`                            |
 | `menueqr:error` | `{ message }` for invalid configuration |
 
-Configuration changes are batched within a microtask. Removing an attribute restores its default; removing the custom element destroys the widget. Invalid updates emit an error and preserve the previous working instance. These events never expose guest or booking data.
+Events bubble from the custom element and contain no guest data. The element also exposes `open()` / `close()`.
 
-## Content Security Policy and styling
+## Browser / SSR and CSP
 
-The parent website must allow frames from `https://www.menueqr.de` in its `frame-src`. The service must independently allow the website's origin. Do not relax your policy to `*` or disable origin checks.
+Importing is safe during SSR. With the JS API mount only after the page has a body and a connected HTML target. Serve via HTTP(S), not `file://`.
 
-The SDK injects a style element into its Shadow DOM. If your CSP requires a style nonce, pass the same per-response nonce used by your server as `nonce`. Runtime CSS variables and positioning are assigned through DOM style properties; test the site's actual CSP, including `style-src-attr`, before rollout. A nonce is not a universal workaround for all CSP policies.
+Modern native dialog, Shadow DOM and media-query event support are the target. When native dialogs are unavailable, clicking a launcher opens the public reservation page in a new tab. Imperative `open()` returns false; provide a normal link if you use only a custom trigger. Keep a regular reservation link for no-JavaScript visitors if needed.
 
-Colors and positions use the public options. The SDK does not inject global CSS, load fonts or support reaching into the hosted cross-origin form. Its launcher uses automatic black/white contrast; the service owns form styling.
+The host's `frame-src` must allow `https://www.menueqr.de`. The service must also allow the host's origin. Do not use wildcard permissions or disable origin checks.
 
-The iframe is sandboxed, sends no referrer, and accepts lifecycle messages only from its exact origin and window. The package has no analytics or direct backend fetches. Opening the hosted form still contacts MenüQR; account for the hosted service in the website's applicable privacy disclosures.
+Isolated styles are injected into Shadow DOM. Pass a server-generated `nonce` if your CSP requires one. The SDK sets CSS variables and position through DOM style properties; test the website's actual `style-src-attr` policy. A nonce does not resolve every CSP configuration.
 
-## Local fixture origin
+The sandboxed frame sends no referrer. Lifecycle messages must come from its exact origin and source window. The SDK has no telemetry or direct backend fetches; opening the hosted frame still contacts MenüQR and should be covered by the site's applicable privacy disclosures.
 
-`baseUrl` defaults to `https://www.menueqr.de`. The only other accepted origins are loopback HTTP(S) origins (`localhost`, `127.0.0.1`, `[::1]`) with an optional port. Paths, query strings, credentials and arbitrary hosts are rejected.
+## Local preview
 
-This option exists for isolated development. The bundled playground uses `http://127.0.0.1:4311`, validates its local parent origin and never sends a real booking. Keep the default in production. Custom proxy domains and self-hosting the MenüQR backend are outside this MVP.
+`baseUrl` defaults to `https://www.menueqr.de`. Only explicit loopback HTTP(S) origins (`localhost`, `127.0.0.1`, `[::1]`) are also accepted for local fixtures. Paths, credentials, query strings and arbitrary origins are rejected. Keep the default in production.
 
-Configure local ports, if necessary:
+The playground uses ports `4310` and `4311`. Example times and contact data are local fixture state, not live restaurant availability. Preview submissions never leave the browser. The separate Live Preview control opts into the hosted restaurant form; it can create real bookings if submitted.
 
 ```sh
 WIDGET_PLAYGROUND_PORT=4410 WIDGET_FIXTURE_PORT=4411 npm run dev
 ```
 
+## Compatibility
+
+The `mountReservations` API and generic `menueqr-reservations` element from 0.1.x are retained and deprecated. They alone support the old `mode` configuration. New code should use the separate components. Destroy an old integration before mounting a new component on the same target; do not also load the legacy script.
+
 ## Troubleshooting
 
-| Symptom                         | Check                                                                                      |
-| ------------------------------- | ------------------------------------------------------------------------------------------ |
-| Form unavailable                | Restaurant widget/reservations enabled, subscription eligible, website origin approved     |
-| Browser refuses the frame       | Parent `frame-src`, service origin permission, browser console CSP errors                  |
-| Duplicate launchers             | Use one target/controller; do not also load the legacy script on the same integration      |
-| Widget remains after navigation | Call `destroy()` in component cleanup                                                      |
-| No UI during SSR                | Expected; mount on the client                                                              |
-| Color rejected                  | Use a complete six-digit hex string, for example `#ff730a`                                 |
-| Custom element does not mount   | Call `defineReservationsElement()` on the client; inspect `menueqr:error`                  |
-| Invalid attribute               | Boolean values must be literal `true` / `false`; numeric attributes must be valid integers |
-
-The direct reservation link remains available while a frame has not signalled readiness. It is a fallback, not a promise that an unavailable restaurant can accept bookings. This SDK does not retry or submit reservations on its own.
+Unavailable frame: check widget/reservations enabled, subscription eligibility, website origin approval and CSP. Missing mount target or server-side mounting produces a configuration error. A direct-link fallback remains while a frame has not reported readiness; it does not bypass restaurant availability or permissions.

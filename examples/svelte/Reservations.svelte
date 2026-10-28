@@ -1,14 +1,14 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { mountReservations, type ReservationWidget, type WidgetLanguage } from '@menueqr/widget';
+  import { mountReservationButton, type ReservationComponent, type WidgetLanguage } from '@menueqr/widget';
 
   export let restaurant: string;
   export let language: WidgetLanguage = 'de';
   let target: HTMLDivElement;
-  let widget: ReservationWidget | undefined;
+  let widget: ReservationComponent | undefined;
 
   onMount(() => {
-    widget = mountReservations(target, { restaurant, language, mode: 'button' });
+    widget = mountReservationButton(target, { restaurant, language });
     return () => {
       widget?.destroy();
       widget = undefined;

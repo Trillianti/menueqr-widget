@@ -452,3 +452,10 @@ footer {
     transition: none !important;
   }
 }
+
+.connection-hint {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #64745b;
+  margin: -6px 0 18px;
+}

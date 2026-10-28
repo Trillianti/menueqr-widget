@@ -3,8 +3,9 @@ export type WidgetLanguage = (typeof languages)[number];
 export type WidgetMode = 'button' | 'floating' | 'tab' | 'inline';
 export type CloseReason = 'api' | 'escape' | 'backdrop' | 'frame' | 'update' | 'destroy';
 export interface ReservationWidgetOptions {
-  /** Public restaurant slug, not a URL or account credential. */
+  /** Public restaurant slug or MenüQR menu link. No account credential. */
   restaurant: string;
+  /** @deprecated Use a separate reservation component instead. */
   mode?: WidgetMode;
   language?: WidgetLanguage;
   color?: string;
@@ -38,3 +39,13 @@ export interface ReservationWidget {
   /** Removes only this instance's DOM and listeners. Safe to call repeatedly. */
   destroy(): void;
 }
+/** Shared configuration for the four separate presentation components. */
+export type ReservationComponentOptions = Omit<ReservationWidgetOptions, 'mode'>;
+export interface ReservationComponent extends Omit<ReservationWidget, 'options' | 'update'> {
+  readonly options: Omit<WidgetConfiguration, 'mode'>;
+  update(options: Partial<ReservationComponentOptions>): void;
+}
+export type ReservationMount = (
+  target: string | HTMLElement,
+  options: ReservationComponentOptions,
+) => ReservationComponent;
