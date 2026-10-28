@@ -1,0 +1,86 @@
+{
+  "name": "@menueqr/widget",
+  "version": "0.1.0",
+  "description": "Framework-independent reservation widgets for MenüQR. Zero runtime dependencies, SSR-safe imports, typed lifecycle API.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./element": {
+      "types": "./dist/element.d.ts",
+      "import": "./dist/element.js",
+      "require": "./dist/element.cjs"
+    },
+    "./package.json": "./package.json",
+    "./prompt": {
+      "types": "./dist/prompt.d.ts",
+      "import": "./dist/prompt.js",
+      "require": "./dist/prompt.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "AI_INTEGRATION.md",
+    "docs/integration.md",
+    "examples"
+  ],
+  "sideEffects": false,
+  "license": "MIT",
+  "author": "MenüQR",
+  "homepage": "https://github.com/Trillianti/menueqr-widget#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Trillianti/menueqr-widget.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Trillianti/menueqr-widget/issues"
+  },
+  "keywords": [
+    "menueqr",
+    "reservations",
+    "restaurant",
+    "widget",
+    "web-component",
+    "typescript"
+  ],
+  "scripts": {
+    "build": "node scripts/build.mjs && tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "check": "npm run typecheck && npm test && npm run build && node scripts/check-package.mjs",
+    "dev": "node scripts/dev.mjs",
+    "prepack": "npm run build",
+    "version": "node scripts/sync-version.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "esbuild": "0.28.2",
+    "prettier": "3.9.10",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "typescript": "7.0.2",
+    "vite": "8.3.5",
+    "vitest": "5.0.5",
+    "vue": "^3.5.44"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true
+  }
+}

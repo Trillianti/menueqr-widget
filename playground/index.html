@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>MenüQR Widget — Playground</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="masthead">
+      <a href="/" class="brand">MenüQR <span>Widget</span></a
+      ><span class="environment"><i></i> Local sandbox</span
+      ><a
+        href="https://github.com/Trillianti/menueqr-widget"
+        target="_blank"
+        rel="noopener noreferrer"
+        >GitHub ↗</a
+      >
+    </header>
+    <main class="layout">
+      <aside class="settings">
+        <div class="intro">
+          <span class="eyebrow">Framework-independent</span>
+          <h1>Make it yours.</h1>
+          <p>This is the real SDK, connected to a local preview form. No bookings are sent.</p>
+        </div>
+        <form id="settings">
+          <label for="mode">Presentation</label
+          ><select id="mode">
+            <option value="button">Button</option>
+            <option value="floating">Floating panel</option>
+            <option value="tab">Side tab</option>
+            <option value="inline">Inline form</option>
+          </select>
+          <div class="columns">
+            <div>
+              <label for="language">Language</label
+              ><select id="language">
+                <option value="de">Deutsch</option>
+                <option value="en" selected>English</option>
+                <option value="fr">Français</option>
+                <option value="it">Italiano</option>
+                <option value="es">Español</option>
+                <option value="pt">Português</option>
+                <option value="pl">Polski</option>
+                <option value="uk">Українська</option>
+                <option value="tr">Türkçe</option>
+              </select>
+            </div>
+            <div>
+              <label for="side">Position</label
+              ><select id="side">
+                <option value="right">Right</option>
+                <option value="left">Left</option>
+              </select>
+            </div>
+          </div>
+          <div class="columns">
+            <div>
+              <label for="color">Accent</label><input id="color" type="color" value="#ff730a" />
+            </div>
+            <div>
+              <label for="integration">Integration</label
+              ><select id="integration">
+                <option value="api">JavaScript API</option>
+                <option value="element">Web Component</option>
+              </select>
+            </div>
+          </div>
+          <label for="button-label">Button text <span>optional</span></label
+          ><input
+            id="button-label"
+            type="text"
+            placeholder="Use the selected language"
+            maxlength="120"
+          /><label class="checkbox"
+            ><input id="mobile" type="checkbox" checked /> Show on mobile</label
+          >
+          <div class="lifecycle">
+            <button type="button" id="open">Open</button
+            ><button type="button" id="close">Close</button
+            ><button type="button" id="remount">Remount</button
+            ><button type="button" id="destroy">Destroy</button>
+          </div>
+        </form>
+        <p id="state" role="status">Loading SDK…</p>
+        <p id="error" role="alert" hidden></p>
+        <details class="events">
+          <summary>Lifecycle events</summary>
+          <ol id="events"></ol>
+        </details>
+      </aside>
+      <section class="preview" aria-label="Example restaurant website">
+        <div class="browserbar">
+          <span class="dots" aria-hidden="true">● ● ●</span><span>restaurant.example</span
+          ><span>Example website</span>
+        </div>
+        <div class="restaurant">
+          <nav class="restaurant-nav">
+            <span>Lumi</span><span>Restaurant · Menu · Contact</span>
+          </nav>
+          <div class="restaurant-intro">
+            <span class="eyebrow">Bistro & Bar · Vienna</span>
+            <h2>A small room.<br />A good evening.</h2>
+            <p>A seasonal kitchen, a familiar table, and time for one more conversation.</p>
+            <div id="booking"></div>
+          </div>
+          <div class="restaurant-bottom">
+            <span>Wednesday — Sunday<br />17:00 — 23:00</span
+            ><span>Sample content.<br />Not a real restaurant.</span>
+          </div>
+        </div>
+      </section>
+      <section class="integration-card">
+        <div>
+          <span class="eyebrow">Take it to your project</span>
+          <h2>One package. Your stack.</h2>
+          <p>
+            These examples use the production origin. Replace the sample slug and approve your
+            website in MenüQR before going live.
+          </p>
+        </div>
+        <div class="codebox">
+          <div class="codebar">
+            <span>JavaScript / TypeScript</span
+            ><button id="copy-code" type="button">Copy code</button>
+          </div>
+          <pre id="code"></pre>
+        </div>
+        <div class="promptbox">
+          <div>
+            <h3>Let your AI add it.</h3>
+            <p>
+              A ready-to-paste prompt with the actual package API, lifecycle rules and settings.
+            </p>
+          </div>
+          <button id="copy-prompt" type="button">Copy AI prompt</button>
+        </div>
+        <p id="copy-state" role="status"></p>
+      </section>
+    </main>
+    <footer>
+      MenüQR · MVP 0.1.0 <span>Resize this browser to test the actual mobile breakpoint.</span>
+    </footer>
+    <script type="module" src="/main.ts"></script>
+  </body>
+</html>

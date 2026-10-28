@@ -1,0 +1,42 @@
+name: Release archive
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Verify tag and package version
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: node -e 'if (`v${require("./package.json").version}` !== process.env.RELEASE_TAG) process.exit(1)'
+      - run: npm run check
+      - run: npm run format:check
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - run: npm run test:e2e
+      - name: Pack and publish GitHub artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm pack
+          archive="menueqr-widget-${RELEASE_TAG#v}.tgz"
+          sha256sum "$archive" > SHA256SUMS
+          flags=()
+          if [[ "$RELEASE_TAG" == v0.* ]]; then flags+=(--prerelease); fi
+          gh release create "$RELEASE_TAG" "$archive" SHA256SUMS --verify-tag --title "MenüQR Widget $RELEASE_TAG" --notes-file CHANGELOG.md "${flags[@]}"
