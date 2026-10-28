@@ -459,3 +459,118 @@ footer {
   color: #64745b;
   margin: -6px 0 18px;
 }
+
+.guide-step {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+.guide-step h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+}
+.step-number {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border: 1px solid #cbd6c1;
+  border-radius: 50%;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.guide-note,
+.guide-notes,
+.connection-steps {
+  font-size: 12px;
+  line-height: 1.8;
+  color: #5e7451;
+  margin: 0;
+}
+.guide-notes,
+.connection-steps {
+  padding-left: 18px;
+}
+.guide-notes li + li,
+.connection-steps li + li {
+  margin-top: 5px;
+}
+.connection-steps code {
+  font:
+    12px/1.7 ui-monospace,
+    SFMono-Regular,
+    monospace;
+  color: #364c2b;
+  overflow-wrap: anywhere;
+}
+.connect-step {
+  border-top: 1px solid #d3ddc9;
+  padding-top: 24px;
+}
+.guide-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  font-size: 12px;
+}
+.guide-links a {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+#support-example .codebox {
+  margin-bottom: 14px;
+}
+
+.step-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+#syntax-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  color: #5c7250;
+  font-size: 12px;
+  font-weight: 400;
+}
+#code-syntax {
+  width: auto;
+  min-height: 36px;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+#syntax-control label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 400;
+  color: inherit;
+}
+
+.guide-jump {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  padding: 12px 16px;
+  margin: 18px 0 10px;
+  border: 1px solid #202820;
+  border-radius: 8px;
+  background: #202820;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 550;
+}
+.guide-jump:hover {
+  background: #364c2b;
+}

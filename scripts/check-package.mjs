@@ -19,6 +19,7 @@ for (const kind of ['Button', 'Floating', 'Tab', 'Inline']) {
 const { createElement } = await import('react');
 const { renderToString } = await import('react-dom/server');
 const react = await import('../dist/react.js');
+assert.match(await readFile('dist/react.js', 'utf8'), /^["']use client["'];/);
 for (const name of [
   'ReservationButton',
   'ReservationFloating',

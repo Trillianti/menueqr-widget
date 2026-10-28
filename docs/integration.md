@@ -10,21 +10,21 @@ No internal restaurant ID is necessary. The service independently enforces featu
 
 ## Separate components
 
-| Presentation | JS import path             | Mount function             | Custom element                 |
-| ------------ | -------------------------- | -------------------------- | ------------------------------ |
-| Button       | `@menueqr/widget/button`   | `mountReservationButton`   | `menueqr-reservation-button`   |
-| Floating     | `@menueqr/widget/floating` | `mountReservationFloating` | `menueqr-reservation-floating` |
-| Tab          | `@menueqr/widget/tab`      | `mountReservationTab`      | `menueqr-reservation-tab`      |
-| Inline       | `@menueqr/widget/inline`   | `mountReservationInline`   | `menueqr-reservation-inline`   |
+| Presentation | JS import path    | Mount function             | Custom element                 |
+| ------------ | ----------------- | -------------------------- | ------------------------------ |
+| Button       | `@menueqr/widget` | `mountReservationButton`   | `menueqr-reservation-button`   |
+| Floating     | `@menueqr/widget` | `mountReservationFloating` | `menueqr-reservation-floating` |
+| Tab          | `@menueqr/widget` | `mountReservationTab`      | `menueqr-reservation-tab`      |
+| Inline       | `@menueqr/widget` | `mountReservationInline`   | `menueqr-reservation-inline`   |
 
 Each presentation has its own rendering module. They reuse the button primitive, iframe transport, validation and lifecycle. A mounted component cannot change its type via configuration: destroy/unmount it and mount the other component. Do not pass `mode` to these components.
 
-The root entry also exports all four mount functions. ESM and CommonJS entry points preserve module boundaries, sharing one lifecycle registry. Mounting a different component onto an occupied target throws; repeated mounts of the same component update its existing controller.
+Use the package root for all four JS components. The `/button`, `/floating`, `/tab` and `/inline` subpaths remain supported for compatibility. ESM and CommonJS entry points preserve module boundaries, sharing one lifecycle registry. Mounting a different component onto an occupied target throws; repeated mounts of the same component update its existing controller.
 
 ## JS lifecycle
 
 ```ts
-import { mountReservationButton } from '@menueqr/widget/button';
+import { mountReservationButton } from '@menueqr/widget';
 const widget = mountReservationButton(element, {
   restaurant: 'bistro-lumi',
   onOpen: () => console.log('Opened'),
@@ -46,7 +46,7 @@ Floating and Tab hosts are portaled to `document.body` to avoid clipping; their 
 
 ## React and Next.js
 
-Import the separate components from `@menueqr/widget/react` inside a client component. React is an optional peer dependency for this adapter, never a dependency of the core JS API. Each component accepts the shared restaurant/style/callback props and optional `id`, `className`, `style` for its mounting div.
+Import the separate components from `@menueqr/widget/react` in your page or layout. The library already declares its own client boundary. A Next.js server layout can keep its metadata and server behavior when it passes serializable options; event callbacks require a separate client wrapper. React is an optional peer dependency for this adapter, never a dependency of the core JS API. Each component accepts the shared restaurant/style/callback props and optional `id`, `className`, `style` for its mounting div.
 
 Prop changes update the existing controller; unmount releases it. Replacing the component type tears down the old presentation. Strict Mode mount/cleanup cycles are supported. Imports and server rendering do not mount a browser iframe.
 
@@ -96,3 +96,29 @@ The `mountReservations` API and generic `menueqr-reservations` element from 0.1.
 ## Troubleshooting
 
 Unavailable frame: check widget/reservations enabled, subscription eligibility, website origin approval and CSP. Missing mount target or server-side mounting produces a configuration error. A direct-link fallback remains while a frame has not reported readiness; it does not bypass restaurant availability or permissions.
+
+## Generated setup guides
+
+Select React, Next.js, JavaScript or Web Component in the playground. Each guide contains the pinned install command, complete component/layout example and restaurant setup steps. React / Next.js support TypeScript TSX and JavaScript JSX output. JSX components are rendered in the React and Next.js previews; the Next.js preview is a browser preview of that same component, not an embedded Next.js server.
+
+`createIntegrationGuide({ restaurant, component, integration, codeLanguage })` from `@menueqr/widget/prompt` returns the install command, primary file, optional support file and notes. `createIntegrationPrompt` accepts the same `integration` choice; its AI instructions match the selected framework. The default for these helper functions remains `api` for compatibility.
+
+## Plain HTML without a bundler
+
+The npm examples assume a project build that resolves package imports. For a plain HTML site, download the pinned release archive and copy the **entire** `package/dist/` directory to `/vendor/menueqr-widget/` on your website. Preserve the module paths.
+
+Create `booking-setup.js` on that website:
+
+```js
+import { defineReservationFloatingElement } from '/vendor/menueqr-widget/element.js';
+defineReservationFloatingElement();
+```
+
+Then add this to the page:
+
+```html
+<script type="module" src="/booking-setup.js"></script>
+<menueqr-reservation-floating restaurant="bistro-lumi"></menueqr-reservation-floating>
+```
+
+This uses self-hosted browser modules and needs no React runtime. Serve over HTTP(S) with JavaScript MIME types and the required frame permission. A CMS must allow you to include the setup module; for WordPress, the dedicated MenüQR plugin handles the integration instead.

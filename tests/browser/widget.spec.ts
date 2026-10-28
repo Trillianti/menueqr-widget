@@ -198,6 +198,7 @@ test('the sandbox uses the SDK and generates the versioned AI prompt without pro
     if (new URL(req.url()).hostname.endsWith('menueqr.de')) production.push(req.url());
   });
   await page.goto('/');
+  await page.selectOption('#integration', 'api');
   await expect(page.getByRole('heading', { name: 'Make it yours.' })).toBeVisible();
   await page.selectOption('#component', 'floating');
   await page.getByRole('button', { name: 'Open', exact: true }).click();

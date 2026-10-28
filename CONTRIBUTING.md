@@ -35,6 +35,16 @@ npm pack --dry-run
 
 Use local fixtures; never run mutating tests against a real restaurant. Do not commit credentials, private app sources, generated test output or `node_modules`.
 
+## Next.js consumer verification
+
+With Next.js, React and React DOM already installed in a local project:
+
+```sh
+NEXT_SMOKE_MODULES=/absolute/path/to/next-project/node_modules npm run test:next
+```
+
+The module directory is read-only input. This command builds and packs the SDK, creates a disposable Next.js app in the system temporary folder and runs its generated root layout on loopback port `4340`. Browser tests intercept hosted-form requests locally. It verifies server metadata, client hydration, route transitions and refresh, then stops only its own server processes. `NEXT_SMOKE_PORT` changes that test port if needed. These variables are development-only and are not required by an installed widget.
+
 ## Releases
 
 Update the changelog, run `npm version <version> --no-git-tag-version`, review changes and run all checks. This updates `src/version.ts`, keeping copied installation instructions aligned with the artifact. The current version's README / AI guide installation URLs must also be updated.

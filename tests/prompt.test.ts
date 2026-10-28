@@ -22,3 +22,13 @@ it('serializes labels as data rather than executable code', () => {
   const result = integrationSnippet({ restaurant: 'example', label: '"; alert(1); //' });
   expect(result).toContain('\\"; alert(1); //');
 });
+it.each(['button', 'floating', 'tab', 'inline'] as const)(
+  'imports the %s component from the shared package root',
+  (component) => {
+    const snippet = integrationSnippet({ restaurant: 'example', component });
+    const name = `mountReservation${component[0]!.toUpperCase()}${component.slice(1)}`;
+    expect(snippet).toContain(`import { ${name} } from "@menueqr/widget";`);
+    expect(snippet).not.toContain(`@menueqr/widget/${component}`);
+    expect(createIntegrationPrompt({ restaurant: 'example', component })).toContain(snippet);
+  },
+);

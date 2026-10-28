@@ -26,6 +26,8 @@ jobs:
       - run: npm run format:check
       - run: npx playwright install --with-deps chromium firefox webkit
       - run: npm run test:e2e
+      - run: npm install --no-save --package-lock=false next@16.4.3
+      - run: npm run test:next
       - name: Pack and publish GitHub artifact
         env:
           GH_TOKEN: ${{ github.token }}

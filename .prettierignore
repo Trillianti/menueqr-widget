@@ -3,6 +3,7 @@ dist/
 coverage/
 playwright-report/
 test-results/
+test-results-next/
 package-lock.json
 LICENSE
 scripts/fixture/fonts/LICENSE-Inter.txt

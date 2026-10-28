@@ -9,14 +9,14 @@ Integrate the official MenüQR reservation SDK into this website. Identify the f
 Install the pinned release:
 
 ```sh
-npm install https://github.com/Trillianti/menueqr-widget/releases/download/v0.2.0/menueqr-widget-0.2.0.tgz
+npm install https://github.com/Trillianti/menueqr-widget/releases/download/v0.2.1/menueqr-widget-0.2.1.tgz
 ```
 
 The archive installs as `@menueqr/widget`. It is not yet published to the npm registry.
 
 Choose **one of four separate components**: `ReservationButton`, `ReservationFloating`, `ReservationTab`, `ReservationInline`. Do not implement a single component with a `mode` prop.
 
-For React / Next.js, use a client component:
+For React, use the ready JSX component:
 
 ```tsx
 'use client';
@@ -27,10 +27,12 @@ export function Booking() {
 }
 ```
 
+For Next.js App Router, you can import the JSX component directly into an existing server layout and put it inside the existing body. The package owns its client boundary. Preserve metadata, fonts, providers and children; do not turn the entire layout into a client component merely for the widget. Event callbacks belong in a separate client wrapper.
+
 For other frameworks, mount the matching JS component in the client lifecycle and destroy it during unmount:
 
 ```ts
-import { mountReservationFloating } from '@menueqr/widget/floating';
+import { mountReservationFloating } from '@menueqr/widget';
 const widget = mountReservationFloating(connectedElement, {
   restaurant: 'https://www.menueqr.de/menu/bistro-lumi/',
   language: 'de',
@@ -39,7 +41,7 @@ const widget = mountReservationFloating(connectedElement, {
 widget.destroy();
 ```
 
-`/button`, `/tab`, `/inline` export their own mount functions. The optional `/element` entry registers four distinct custom elements. Read the README and integration guide for exact names, attributes and lifecycle methods; do not invent exports or events.
+Import all four JS mount functions from `@menueqr/widget`: `mountReservationButton`, `mountReservationFloating`, `mountReservationTab`, `mountReservationInline`. They are separate components with a shared package import. The optional `/element` entry registers four distinct custom elements. Read the README and integration guide for exact names, attributes and lifecycle methods; do not invent exports or events.
 
 Requirements:
 
@@ -51,6 +53,7 @@ Requirements:
 - The service owns availability, booking rules, guest data and restaurant approval. Do not create an alternative booking engine or confirm a request on the client.
 - A live integration needs the feature enabled, an eligible subscription and the website's origin approved in MenüQR. Report configuration failures; never bypass CSP or access checks.
 - Keep the default service origin in production. The local fixture `baseUrl` belongs only in development tests.
+- Confirm the host build resolves npm package imports. For plain HTML without a bundler, use the self-hosted ESM recipe in the integration guide rather than inventing a CDN URL.
 - Use local preview for tests. Live preview can create real reservations; do not submit one without authorization.
 - Run the host project's checks. Verify desktop, narrow screens, keyboard flow and navigation cleanup; report only checks actually performed.
 

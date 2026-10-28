@@ -117,11 +117,13 @@ test('playground accepts menu links, generates separate imports and opts in to l
     route.fulfill({ status: 404, body: 'Unavailable test fixture' }),
   );
   await page.goto('/');
+  await page.selectOption('#integration', 'api');
   await page
     .getByLabel('Restaurant link or slug')
     .fill('https://www.menueqr.de/menu/my-bistro/items/?lang=de');
   await page.selectOption('#component', 'floating');
   await expect(page.locator('#code')).toContainText('mountReservationFloating');
+  await expect(page.locator('#code')).toContainText('from "@menueqr/widget";');
   await expect(page.locator('#code')).toContainText('"restaurant": "my-bistro"');
   await expect(page.locator('#code')).not.toContainText('"mode"');
   if (process.env.WIDGET_CAPTURE_DOCS === '1' && test.info().project.name === 'chromium') {

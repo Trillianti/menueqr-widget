@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.1
+
+- React-first playground with separate React, Next.js, JavaScript and Web Component setup guides.
+- Copyable install commands, JSX/layout examples, registration/HTML files and framework-specific AI prompts.
+- Shared package-root imports in JavaScript examples and generated code.
+- Real React component previews with automatic cleanup and state preserved between React / Next.js guide selection.
+- Packed-package Next.js consumer QA for metadata, hydration, navigation and refresh.
+
 ## 0.2.0
 
 - Four separate reservation components with their own presentation modules and JS entry points.

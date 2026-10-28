@@ -1,6 +1,6 @@
 {
   "name": "@menueqr/widget",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Framework-independent reservation widgets for MenüQR. Zero runtime dependencies, SSR-safe imports, typed lifecycle API.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -86,7 +86,8 @@
     "prepack": "npm run build",
     "version": "node scripts/sync-version.mjs",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "test:next": "npm run build && node scripts/next-smoke.mjs"
   },
   "devDependencies": {
     "@playwright/test": "1.64.1",
