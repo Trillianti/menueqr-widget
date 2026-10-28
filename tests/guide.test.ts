@@ -1,5 +1,9 @@
 import { expect, it } from 'vitest';
 import { transform } from 'esbuild';
+import { runInNewContext } from 'node:vm';
+import { createElement, type ComponentType, type ReactNode } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import * as jsxRuntime from 'react/jsx-runtime';
 import {
   createIntegrationGuide,
   createIntegrationPrompt,
@@ -9,6 +13,42 @@ import {
   elementMarkupSnippet,
 } from '../src/prompt.js';
 const input = { restaurant: 'https://www.menueqr.de/menu/bistro-lumi/', language: 'de' as const };
+async function renderExample(source: string, loader: 'jsx' | 'tsx') {
+  const { code } = await transform(source, { loader, jsx: 'automatic', format: 'cjs' });
+  const widgets = Object.fromEntries(
+    ['ReservationButton', 'ReservationFloating', 'ReservationTab', 'ReservationInline'].map(
+      (name) => [
+        name,
+        (props: Record<string, unknown>) =>
+          createElement('span', { 'data-component': name, 'data-options': JSON.stringify(props) }),
+      ],
+    ),
+  );
+  const module = {
+    exports: {} as {
+      SiteLayout?: ComponentType<{ children: ReactNode }>;
+      default?: ComponentType<{ children: ReactNode }>;
+    },
+  };
+  runInNewContext(
+    code,
+    {
+      module,
+      exports: module.exports,
+      require: (name: string) => {
+        if (name === 'react/jsx-runtime') return jsxRuntime;
+        if (name === '@menueqr/widget/react') return widgets;
+        throw new Error(`Unexpected example import: ${name}`);
+      },
+    },
+    { timeout: 1000, contextCodeGeneration: { strings: false, wasm: false } },
+  );
+  const Component = module.exports.SiteLayout ?? module.exports.default;
+  if (!Component) throw new Error('The example must export its layout component.');
+  return renderToStaticMarkup(
+    createElement(Component, { children: createElement('p', null, 'Page content') }),
+  );
+}
 it.each(['button', 'floating', 'tab', 'inline'] as const)(
   'generates valid React and Next.js TSX for the %s component',
   async (component) => {
@@ -42,20 +82,13 @@ it.each(['react', 'next'] as const)(
     ).resolves.toBeDefined();
     const typed = createIntegrationGuide({ ...input, integration, codeLanguage: 'typescript' });
     const [js, ts] = await Promise.all([
-      transform(guide.primary.code, {
-        loader: 'jsx',
-        jsx: 'automatic',
-        format: 'esm',
-        minify: true,
-      }),
-      transform(typed.primary.code, {
-        loader: 'tsx',
-        jsx: 'automatic',
-        format: 'esm',
-        minify: true,
-      }),
+      renderExample(guide.primary.code, 'jsx'),
+      renderExample(typed.primary.code, 'tsx'),
     ]);
-    expect(js.code).toBe(ts.code);
+    expect(js).toBe(ts);
+    expect(js).toContain('data-component="ReservationButton"');
+    expect(js).toContain('bistro-lumi');
+    expect(js).toContain('Page content');
   },
 );
 it.each(['react', 'next', 'api', 'element'] as const)(
