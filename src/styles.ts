@@ -5,9 +5,7 @@ button,a{-webkit-tap-highlight-color:transparent}
 button{font:inherit;cursor:pointer}button:disabled{cursor:default}
 button:focus-visible,a:focus-visible{outline:2px solid #fff;outline-offset:2px;box-shadow:0 0 0 5px #1d2722}
 .trigger{display:inline-flex;align-items:center;justify-content:center;gap:9px;border:1px solid transparent;border-radius:10px;padding:14px 20px;min-height:48px;max-width:calc(100vw - 32px);font:600 14px/1.4 system-ui,sans-serif;background:var(--mw-color);color:var(--mw-foreground)}
-.icon{display:inline-block;width:16px;height:17px;flex:none;border:1.6px solid currentColor;border-radius:3px;position:relative}
-.icon::before{content:"";position:absolute;left:-1px;right:-1px;top:4px;border-top:1.6px solid currentColor}
-.icon::after{content:"";position:absolute;left:3px;right:3px;top:-4px;height:3px;border-inline:1.6px solid currentColor}
+.icon{display:block;width:20px;height:20px;flex:none}
 .trigger[data-mode=floating]{position:fixed;bottom:max(var(--mw-offset-y),env(safe-area-inset-bottom));right:var(--mw-offset-x);border-radius:100px;z-index:99990}
 .trigger[data-mode=floating][data-side=left]{right:auto;left:var(--mw-offset-x)}
 .trigger[data-mode=tab]{position:fixed;top:50%;right:0;transform:translateY(-50%);writing-mode:vertical-rl;padding:18px 12px;border-radius:10px 0 0 10px;z-index:99990}
