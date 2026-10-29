@@ -49,6 +49,12 @@ assert.equal(Object.keys(pkg.dependencies ?? {}).length, 0);
 assert.ok(
   prompt.releaseInstallSource.includes(`/v${pkg.version}/menueqr-widget-${pkg.version}.tgz`),
 );
+for (const manager of ['npm', 'pnpm', 'yarn', 'bun']) {
+  assert.equal(
+    prompt.installationCommand(manager),
+    `${manager} ${manager === 'npm' ? 'install' : 'add'} @menueqr/widget`,
+  );
+}
 console.log(
   'ESM, CommonJS, SSR-safe imports, declarations and zero runtime dependencies verified.',
 );

@@ -39,13 +39,18 @@ If the service confirms that the embedding site is not approved, the widget show
 
 ## Install
 
-Version **0.2.1** is distributed as an npm-installable archive on GitHub Releases. It is **not yet published to the npm registry**.
+Install the published package with the package manager already used by your project:
 
 ```sh
-npm install https://github.com/Trillianti/menueqr-widget/releases/download/v0.2.1/menueqr-widget-0.2.1.tgz
+npm install @menueqr/widget
+pnpm add @menueqr/widget
+yarn add @menueqr/widget
+bun add @menueqr/widget
 ```
 
-Import it as `@menueqr/widget` after installation. Pin a release for production.
+Run one of these commands. React components are imported from `@menueqr/widget/react`; JavaScript components come from `@menueqr/widget`. Commit your lockfile for reproducible installs. No separate registration is needed for pnpm, Yarn or Bun.
+
+Setting up the first npm release? Complete the one-time [publishing setup](docs/publishing.md) first. The local playground works before registry publication. GitHub release archives remain available as an alternative distribution format.
 
 ## React / Next.js
 

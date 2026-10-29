@@ -1,9 +1,5 @@
 import { expect, it } from 'vitest';
-import {
-  createIntegrationPrompt,
-  integrationSnippet,
-  releaseInstallSource,
-} from '../src/prompt.js';
+import { createIntegrationPrompt, integrationSnippet, npmPackageName } from '../src/prompt.js';
 it('generates instructions for the actual package API with no development origin or secrets', () => {
   const input = {
     restaurant: 'example-restaurant',
@@ -13,7 +9,8 @@ it('generates instructions for the actual package API with no development origin
   const prompt = createIntegrationPrompt(input);
   expect(prompt).toContain('mountReservationFloating');
   expect(prompt).not.toContain('"mode"');
-  expect(prompt).toContain(releaseInstallSource);
+  expect(prompt).toContain(`npm install ${npmPackageName}`);
+  expect(prompt).not.toContain('releases/download');
   expect(prompt).toContain('destroy()');
   expect(prompt).not.toContain('127.0.0.1');
   expect(integrationSnippet(input)).toContain('"restaurant": "example-restaurant"');

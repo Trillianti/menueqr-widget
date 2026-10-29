@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.0
+
+- Registry installation guides for npm, pnpm, Yarn and Bun, with matching copyable commands and AI prompts in the playground.
+- Tag-based npm Trusted Publishing with a separate checked-archive job, provenance, retry/collision protection and a manual dry run.
+- Documented first-publication setup and release procedure; no long-lived npm publishing token.
+- Reversible Button, Floating and Tab motion, full-screen mobile overlays and a narrower desktop Tab face with its existing pointer target.
+- Localized recovery for blocked embedding, exact-site diagnostics and a direct link to the Website setting.
+- React prop removal restores defaults, including switching between local and Live previews.
+
 ## 0.2.1
 
 - React-first playground with separate React, Next.js, JavaScript and Web Component setup guides.

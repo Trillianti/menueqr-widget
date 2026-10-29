@@ -143,7 +143,18 @@
           <p id="guide-description"></p>
         </div>
         <section class="guide-step" aria-labelledby="install-title">
-          <h3 id="install-title"><span class="step-number">1</span> Install the package</h3>
+          <div class="step-heading">
+            <h3 id="install-title"><span class="step-number">1</span> Install the package</h3>
+            <div class="guide-control">
+              <label for="package-manager">Package manager</label>
+              <select id="package-manager">
+                <option value="npm">npm</option>
+                <option value="pnpm">pnpm</option>
+                <option value="yarn">Yarn</option>
+                <option value="bun">Bun</option>
+              </select>
+            </div>
+          </div>
           <div class="codebox">
             <div class="codebar">
               <span>Terminal · your project folder</span
@@ -152,7 +163,7 @@
             <pre id="install-command"></pre>
           </div>
           <p class="guide-note">
-            Install from the pinned GitHub release. The npm registry release is not published yet.
+            Use after the first npm release. All four package managers install the same package.
           </p>
         </section>
         <section class="guide-step" aria-labelledby="code-title">

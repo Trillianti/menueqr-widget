@@ -47,6 +47,8 @@ The module directory is read-only input. This command builds and packs the SDK, 
 
 ## Releases
 
-Update the changelog, run `npm version <version> --no-git-tag-version`, review changes and run all checks. This updates `src/version.ts`, keeping copied installation instructions aligned with the artifact. The current version's README / AI guide installation URLs must also be updated.
+Update the changelog and run `npm version <version> --no-git-tag-version`. Review and commit `package.json`, `package-lock.json`, `src/version.ts` and the changelog together. Installation examples use the registry package name, so they need no versioned GitHub URL edits.
 
-Create a `v<version>` tag only after the main branch checks pass. The release workflow builds an npm tarball and SHA-256 file and attaches them to a GitHub release (prerelease for `0.x`). It does **not** publish to the npm registry. The package's `files` allowlist limits archive contents. Verify the downloaded archive in a clean consumer project before announcing a release.
+After the version commit is merged into `main` and checks pass, push a matching `v<version>` tag. The release workflow tests and packs the SDK, then publishes the checked tarball through npm Trusted Publishing and attaches the archive/checksum to a GitHub release. Stable `0.x` versions use `latest`; versions with an explicit prerelease suffix use `next`. A manual Actions run on `main` validates the release without publishing.
+
+Complete the [one-time npm owner setup](docs/publishing.md) before the first automatic publication. No long-lived npm token is required. The package's `files` allowlist limits archive contents. Verify the published package in a clean consumer project before announcing a release.

@@ -4,6 +4,8 @@
 
 Enable reservations and the widget in the restaurant's MenüQR settings with an eligible subscription. Add the embedding website's origin, for example `https://restaurant.example`. Paths are not origins; `www`, ports and schemes are distinct.
 
+Install with `npm install @menueqr/widget`, `pnpm add @menueqr/widget`, `yarn add @menueqr/widget` or `bun add @menueqr/widget`. Use the project's existing package manager and lockfile. Registry installation requires a published release; repository maintainers should complete [publishing setup](publishing.md) for the first version.
+
 Set `restaurant` to the public slug (`bistro-lumi`) or a MenüQR menu URL (`https://www.menueqr.de/menu/bistro-lumi/`). Links under `menueqr.de` and `www.menueqr.de` are accepted over HTTPS. Supported menu tab paths and query/fragment suffixes are normalized to the slug. Foreign hosts, credentials, internal dashboard links and private reservation links are rejected.
 
 No internal restaurant ID is necessary. The service independently enforces feature access, availability, website origins and acceptance. Knowing a slug does not grant management access. The frame's `ready` signal indicates initialization, not a successful reservation.
