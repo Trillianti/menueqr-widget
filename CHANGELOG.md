@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.2
+
+- Redesigned README with screenshots of the actual four widgets and the phone booking flow.
+- Live showcase and installation links for React, Next.js, Vue, Svelte, Angular, JavaScript and Web Components.
+- Clear npm, pnpm, Yarn and Bun installation, restaurant setup and hosted-service requirements.
+- Package runtime and public APIs are unchanged from 0.3.1.
+
 ## 0.3.1
 
 - First automatic npm release through GitHub Trusted Publishing with provenance and the checked GitHub release archive.

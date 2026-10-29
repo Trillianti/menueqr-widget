@@ -1,131 +1,210 @@
+<div align="center">
+
 # MenüQR Widget
 
-**Table reservations for your restaurant website.**
+### A table for two. A few lines of code.
 
-Four separate components. One restaurant link. No framework dependency in the core SDK.
+The reservation flow for your restaurant website.<br />
+Four components. Any framework. One public restaurant link.
 
-[Try it locally](#try-it-locally) · [Integration guide](docs/integration.md) · [AI integration prompt](AI_INTEGRATION.md) · [Releases](https://github.com/Trillianti/menueqr-widget/releases)
+[![npm](https://img.shields.io/npm/v/@menueqr/widget?style=flat-square&color=ef6709&label=npm)](https://www.npmjs.com/package/@menueqr/widget)
+[![CI](https://github.com/Trillianti/menueqr-widget/actions/workflows/ci.yml/badge.svg)](https://github.com/Trillianti/menueqr-widget/actions/workflows/ci.yml)
+[![MIT license](https://img.shields.io/badge/license-MIT-202a24?style=flat-square)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-included-202a24?style=flat-square)](docs/integration.md)
 
-![The reservation form in the local playground](docs/screenshots/modal.jpg)
+**[Live demo](https://www.menueqr.de/en/reservierungswidget/)** · **[Quick start](#quick-start)** · **[Integration reference](docs/integration.md)** · **[AI prompt](AI_INTEGRATION.md)**
 
-## Pick your component
+[![The real Floating widget on an example restaurant website](https://raw.githubusercontent.com/Trillianti/menueqr-widget/main/docs/screenshots/showcase-floating.jpg)](https://www.menueqr.de/en/reservierungswidget/)
 
-| Component             | Closed state            | Open state               |
-| --------------------- | ----------------------- | ------------------------ |
-| `ReservationButton`   | Button inside your page | Centered dialog          |
-| `ReservationFloating` | Bottom corner launcher  | Panel above the launcher |
-| `ReservationTab`      | Tab at the edge         | Side drawer              |
-| `ReservationInline`   | Form in the page        | Always displayed         |
+</div>
 
-Each has its own component, JS mount function, custom element and presentation module. There is **no `mode` prop** in the new API. The components share the iframe, validation and lifecycle code. Overlay components fill the screen on narrow devices.
+**Built to fit your website, without building another booking system.** The SDK handles the entry point, presentation and lifecycle. [MenüQR](https://www.menueqr.de) handles availability, configurable guest fields and reservation requests. The restaurant accepts each booking in its dashboard.
 
-The reservation form is hosted by [MenüQR](https://www.menueqr.de), the same form used by the WordPress integration. Availability, guest data and restaurant approval stay in the service. This package does not contain a second booking engine.
+- **Zero runtime dependencies** in the core. React is an optional adapter.
+- **Four separate components**, with a typed API and automatic cleanup in React.
+- **Full-screen booking on phones**, keyboard support and reduced-motion support.
+- **Nine languages**, configurable colour and placement. No API key in your frontend.
 
-## Connect your restaurant
+The SDK is **free and MIT-licensed**. Live reservations require a published MenüQR restaurant with **PRO or above**, enabled reservations and an approved website origin. The online demo uses sample times and does not create bookings.
 
-Use the restaurant's **public slug or menu link**:
+## Pick your entry point
 
-```ts
-restaurant: 'bistro-lumi';
-// or
-restaurant: 'https://www.menueqr.de/menu/bistro-lumi/';
-```
+<table>
+<tr>
+<td width="50%">
 
-The SDK extracts the slug from approved MenüQR URLs. Language and tracking parameters are not copied into the integration. No internal database ID, password or private API token is needed.
+### 01 / Button
 
-For a live website, enable the widget/reservations in the restaurant's MenüQR settings with an eligible subscription. Add the restaurant's HTTPS website in [Settings → Profile → Website](https://www.menueqr.de/dashboard/settings/profile/?setting=restaurant-website), or connect an additional WordPress website through the supported connection flow. These permissions are enforced by the service; knowing the slug grants no administrative access.
+A button in your layout. A dialog above it.
 
-If the service confirms that the embedding site is not approved, the widget shows the exact origin and a link to that setting. Guests can still open the public reservation page directly. Connection failures show a separate retry message. This explanation requires the corresponding hosted diagnostic endpoint; older hosted versions use the neutral fallback. See [CSP and diagnostics](docs/integration.md#browser--ssr-and-csp).
-
-## Install
-
-Install the published package with the package manager already used by your project:
-
-```sh
-npm install @menueqr/widget
-pnpm add @menueqr/widget
-yarn add @menueqr/widget
-bun add @menueqr/widget
-```
-
-Run one of these commands. React components are imported from `@menueqr/widget/react`; JavaScript components come from `@menueqr/widget`. Commit your lockfile for reproducible installs. No separate registration is needed for pnpm, Yarn or Bun.
-
-Setting up the first npm release? Complete the one-time [publishing setup](docs/publishing.md) first. The local playground works before registry publication. GitHub release archives remain available as an alternative distribution format.
-
-## React / Next.js
-
-Use the JSX component directly in your page or layout. Lifecycle and cleanup are automatic; React is an optional peer dependency used only by this adapter.
-
-```tsx
-'use client';
-
-import { ReservationFloating } from '@menueqr/widget/react';
-
-export default function Booking() {
-  return (
-    <ReservationFloating
-      restaurant="https://www.menueqr.de/menu/bistro-lumi/"
-      language="de"
-      color="#ff730a"
-    />
-  );
-}
-```
-
-Other components from the same entry point:
+[![Button reservation dialog](https://raw.githubusercontent.com/Trillianti/menueqr-widget/main/docs/screenshots/showcase-button.jpg)](https://www.menueqr.de/en/reservierungswidget/?variant=button#widget-demo)
 
 ```tsx
 <ReservationButton restaurant="bistro-lumi" />
-<ReservationTab restaurant="bistro-lumi" side="right" />
+```
+
+</td>
+<td width="50%">
+
+### 02 / Floating
+
+A corner launcher that grows into a booking panel.
+
+[![Floating reservation panel](https://raw.githubusercontent.com/Trillianti/menueqr-widget/main/docs/screenshots/showcase-floating.jpg)](https://www.menueqr.de/en/reservierungswidget/?variant=floating#widget-demo)
+
+```tsx
+<ReservationFloating restaurant="bistro-lumi" />
+```
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+### 03 / Tab
+
+A slim page-edge tab. A drawer from the side.
+
+[![Tab reservation drawer](https://raw.githubusercontent.com/Trillianti/menueqr-widget/main/docs/screenshots/showcase-tab.jpg)](https://www.menueqr.de/en/reservierungswidget/?variant=tab#widget-demo)
+
+```tsx
+<ReservationTab restaurant="bistro-lumi" />
+```
+
+</td>
+<td width="50%">
+
+### 04 / Inline
+
+The booking form, already part of your page.
+
+[![Inline reservation form](https://raw.githubusercontent.com/Trillianti/menueqr-widget/main/docs/screenshots/showcase-inline.jpg)](https://www.menueqr.de/en/reservierungswidget/?variant=inline#widget-demo)
+
+```tsx
 <ReservationInline restaurant="bistro-lumi" />
 ```
 
-Mount the one you want. To change presentation, replace the component; to change the restaurant or styling, update its props. The core SDK never imports React.
+</td>
+</tr>
+</table>
 
-In Next.js App Router, import the widget into your existing `app/layout.tsx` and place the JSX inside its `<body>`. The library already marks its React entry as a Client Component, so your layout can keep server metadata and other server behavior. Keep existing providers, fonts and markup. If you pass event callbacks, put that integration in a separate client wrapper. See the [Next.js component boundary guide](https://nextjs.org/docs/app/getting-started/server-and-client-components).
+Each has its own React component, JavaScript mount function and custom element. **Choose a component, rather than passing a `mode` prop.** All four share the same hosted booking flow.
 
-The playground has separate **React**, **Next.js**, **JavaScript** and **Web Component** guides with a copyable install command and complete examples. [See the layout guide](docs/screenshots/react-guide.jpg).
+<details>
+<summary><strong>See the mobile booking flow</strong></summary>
 
-## JavaScript / TypeScript
+<img src="https://raw.githubusercontent.com/Trillianti/menueqr-widget/main/docs/screenshots/showcase-mobile.jpg" width="280" alt="The real reservation contact step on a phone, with a fixed action button" />
+
+Overlay components open full screen on narrow devices. The same guest fields, booking conditions and language settings follow the restaurant across integrations.
+
+</details>
+
+## Quick start
+
+Install with the package manager your project already uses. Run **one** command:
+
+```sh
+npm install @menueqr/widget
+# or
+pnpm add @menueqr/widget
+# or
+yarn add @menueqr/widget
+# or
+bun add @menueqr/widget
+```
+
+### React
+
+Place the component in your page or shared layout. Mounting and cleanup are automatic.
+
+```tsx
+import { ReservationFloating } from '@menueqr/widget/react';
+
+export default function App() {
+  return <ReservationFloating restaurant="bistro-lumi" language="en" color="#ef6709" />;
+}
+```
+
+`ReservationButton`, `ReservationTab` and `ReservationInline` use the same import path.
+
+### Next.js App Router
+
+Add the component inside your existing layout's `<body>`:
+
+```tsx
+import { ReservationFloating } from '@menueqr/widget/react';
+
+// Inside your existing app/layout.tsx:
+<body>
+  {children}
+  <ReservationFloating restaurant="bistro-lumi" />
+</body>;
+```
+
+Keep your existing fonts, providers and metadata. The adapter already has a `"use client"` boundary; your layout can stay a Server Component. Put event callbacks in a separate client wrapper. [Full Next.js guide →](docs/integration.md)
+
+### JavaScript / TypeScript
+
+Use the core SDK with any bundler. Mount after the target is connected, then clean up when your page or component unmounts.
 
 ```html
-<div id="booking"></div>
+<div id="reservations"></div>
 ```
 
 ```ts
-import { mountReservationFloating } from '@menueqr/widget';
+import { mountReservationButton } from '@menueqr/widget';
 
-const widget = mountReservationFloating('#booking', {
+const widget = mountReservationButton('#reservations', {
   restaurant: 'bistro-lumi',
-  language: 'de',
-  color: '#ff730a',
+  language: 'en',
+  color: '#ef6709',
 });
 
-// Optional controls:
-widget.open();
-widget.close();
-widget.update({ language: 'en' });
-
-// On component unmount / client navigation:
+// When leaving the page or unmounting:
 widget.destroy();
 ```
 
-All four components are imported from the same package:
+The same entry point exports `mountReservationFloating`, `mountReservationTab` and `mountReservationInline`. ESM and CommonJS are supported; importing on a server does not touch the DOM.
 
-```ts
-import {
-  mountReservationButton,
-  mountReservationFloating,
-  mountReservationTab,
-  mountReservationInline,
-} from '@menueqr/widget';
+<details>
+<summary><strong>Vue / Nuxt</strong></summary>
+
+Mount in `onMounted`, release in `onBeforeUnmount`. Imports are SSR-safe.
+
+```vue
+<script setup lang="ts">
+import { onMounted, onBeforeUnmount, ref } from 'vue';
+import { mountReservationFloating, type ReservationComponent } from '@menueqr/widget';
+
+const target = ref<HTMLElement | null>(null);
+let widget: ReservationComponent | undefined;
+
+onMounted(() => {
+  if (target.value) {
+    widget = mountReservationFloating(target.value, { restaurant: 'bistro-lumi' });
+  }
+});
+onBeforeUnmount(() => widget?.destroy());
+</script>
+
+<template>
+  <div ref="target" />
+</template>
 ```
 
-Each function mounts its own component. The optional `/button`, `/floating`, `/tab` and `/inline` subpaths remain supported for existing integrations.
+[Reactive Vue / Nuxt example →](examples/vue/Reservations.vue)
 
-Mount after the target is connected. Repeated mounts of the **same component on the same target** reuse its controller. Destroy it before mounting a different component on that target. Separate targets can host independent components.
+</details>
 
-## Web Components
+<details>
+<summary><strong>Svelte · Angular · Web Components</strong></summary>
+
+| Environment              | Integration                                                                       |
+| ------------------------ | --------------------------------------------------------------------------------- |
+| Svelte                   | [`onMount` with cleanup](examples/svelte/Reservations.svelte)                     |
+| Angular                  | [Browser-guarded lifecycle component](examples/angular/reservations.component.ts) |
+| Astro / other frameworks | [JavaScript API](examples/vanilla/main.ts) inside a client lifecycle              |
+| HTML with a bundler      | Register a custom element, then use its tag                                       |
 
 ```ts
 import { defineReservationFloatingElement } from '@menueqr/widget/element';
@@ -136,16 +215,74 @@ defineReservationFloatingElement();
 ```html
 <menueqr-reservation-floating
   restaurant="bistro-lumi"
-  language="de"
-  color="#ff730a"
+  language="en"
+  color="#ef6709"
 ></menueqr-reservation-floating>
 ```
 
-Four separate elements are available: `menueqr-reservation-button`, `menueqr-reservation-floating`, `menueqr-reservation-tab`, `menueqr-reservation-inline`. Register them individually, or call `defineReservationElements()` once. Attribute changes update configuration; disconnection releases the component. Boolean attributes use literal `"true"` / `"false"` strings.
+Register individual elements or call `defineReservationElements()` once. Attribute updates change configuration; disconnection releases the widget. Boolean attributes use literal `"true"` / `"false"` strings. [Full custom-element reference →](docs/integration.md)
 
-## Try it locally
+Svelte and Angular examples are integration recipes, rather than a claim of full framework certification. React, Next.js, Vue and the browser SDK have dedicated integration tests.
 
-Requires Node.js **22.12+ or 24+** and npm.
+</details>
+
+## Connect your restaurant
+
+**1. Use your public slug or menu link.** Both work:
+
+```ts
+restaurant: 'bistro-lumi';
+// or
+restaurant: 'https://www.menueqr.de/menu/bistro-lumi/';
+```
+
+**2. Enable reservations in MenüQR.** Live bookings need PRO or above and an eligible, published restaurant.
+
+**3. Approve your website.** Add its HTTPS URL in [Settings → Profile → Website](https://www.menueqr.de/dashboard/settings/profile/?setting=restaurant-website), or connect an additional WordPress site through the supported connection flow.
+
+No password, private token or database ID belongs in the integration. Knowing the slug grants no administrative access. The hosted service enforces feature access and allowed origins. If it reports a blocked website, the widget explains the origin and links to the setting; connection failures offer a separate retry. [CSP and diagnostics →](docs/integration.md#browser--ssr-and-csp)
+
+## Make it yours
+
+| Option                           | Default      | Purpose                                                      |
+| -------------------------------- | ------------ | ------------------------------------------------------------ |
+| `restaurant`                     | **Required** | Public slug or MenüQR menu link                              |
+| `language`                       | `de`         | `de` · `en` · `fr` · `it` · `es` · `pt` · `pl` · `uk` · `tr` |
+| `color`                          | `#ff730a`    | Six-digit hex accent; launcher text contrast is automatic    |
+| `label`                          | Localized    | Launcher label, up to 120 characters                         |
+| `side`                           | `right`      | Floating / Tab: `left` or `right`                            |
+| `offsetX` / `offsetY`            | `24` / `24`  | Floating launcher offsets in pixels                          |
+| `mobile`                         | `true`       | Show the widget on screens up to 540 px                      |
+| `icon`                           | `true`       | Show the launcher icon                                       |
+| `inlineHeight`                   | `720`        | Inline form height: 240–1600 px                              |
+| `nonce`                          | Empty        | Server-generated CSP nonce for the widget's styles           |
+| `onOpen` / `onReady` / `onClose` | —            | Lifecycle callbacks; no guest data                           |
+
+React also accepts `id`, `className` and `style` for the mount element. Guest fields and reservation conditions are configured **in the restaurant dashboard**, so every integration uses the same settings.
+
+The JavaScript controller exposes `open()`, `close()`, `update(options)` and `destroy()`. Destroy before replacing a component type on the same target. Repeated mounts of the same component on the same target reuse its controller. [Complete API →](docs/integration.md)
+
+## Give your AI assistant the right context
+
+Choose your framework and component in the [live installation guide](https://www.menueqr.de/en/reservierungswidget/#installation), then copy its AI prompt. Or give your assistant [`AI_INTEGRATION.md`](AI_INTEGRATION.md).
+
+```ts
+import { createIntegrationPrompt } from '@menueqr/widget/prompt';
+
+const prompt = createIntegrationPrompt({
+  restaurant: 'bistro-lumi',
+  component: 'floating',
+  integration: 'react', // react | next | api | element
+  packageManager: 'pnpm',
+  language: 'en',
+});
+```
+
+The prompt uses the real public API and selected component. It includes lifecycle, SSR and restaurant connection instructions.
+
+## Run the playground
+
+Requires Node.js **22.12+ or 24+**.
 
 ```sh
 git clone https://github.com/Trillianti/menueqr-widget.git
@@ -154,64 +291,10 @@ npm ci
 npm run dev
 ```
 
-Open **[127.0.0.1:4310](http://127.0.0.1:4310/)**. Its cross-origin form fixture runs on port `4311`. `Ctrl+C` stops both processes.
+Open **[127.0.0.1:4310](http://127.0.0.1:4310/)**. The cross-origin form fixture uses `4311`; `Ctrl+C` stops both. The local preview uses fictional data and sends no bookings, emails or payments. Live mode is an explicit opt-in and can create real reservations.
 
-Choose your framework and component, enter a restaurant link or slug, then adjust appearance. React is the default and its preview renders the real React component. Select TSX or JSX to match your project.
-
-The guide provides three steps: **install**, **add the component**, **connect the restaurant**. Copy the install command, selected layout/component example, or a framework-specific AI prompt. JavaScript target markup and Web Component registration/HTML are separate copyable files.
-
-Switching component types destroys the previous presentation. React and Next.js guides share the same React preview, so switching between those two guides preserves its state.
-
-By default, the form uses fictional local data and never sends a booking, email or payment. It follows the WordPress form's layout: guest counter, quick dates, time grid, contact step and pinned footer. Nine translated languages and the accent color follow your settings. No account is required for this preview.
-
-**Live preview is an explicit opt-in.** It opens the hosted form for your chosen restaurant and needs the same allowed-origin and feature settings as a real website. A real form can submit a real reservation; use local preview for development tests.
-
-## Use with an AI assistant
-
-Configure the playground and click **Copy AI prompt**, or provide [AI_INTEGRATION.md](AI_INTEGRATION.md).
-
-```ts
-import { createIntegrationPrompt } from '@menueqr/widget/prompt';
-
-const prompt = createIntegrationPrompt({
-  restaurant: 'https://www.menueqr.de/menu/bistro-lumi/',
-  component: 'floating', // Chooses which component the generated code imports.
-  integration: 'react', // react | next | api | element
-  codeLanguage: 'typescript', // typescript | javascript
-  language: 'de',
-});
-```
-
-The generated integration imports the selected component; it does not pass a `mode` setting to a generic widget. No account credentials belong in the code or prompt.
-
-## Shared options
-
-| Option                         | Default      | Meaning                                                   |
-| ------------------------------ | ------------ | --------------------------------------------------------- |
-| `restaurant`                   | **required** | Public slug or MenüQR menu link                           |
-| `language`                     | `de`         | `de`, `en`, `fr`, `it`, `es`, `pt`, `pl`, `uk`, `tr`      |
-| `color`                        | `#ff730a`    | Six-digit hex accent; launcher text contrast is automatic |
-| `label`                        | Localized    | Launcher label, up to 120 characters                      |
-| `side`                         | `right`      | Floating / Tab placement: `left` or `right`               |
-| `offsetX`                      | `24`         | Corner launcher horizontal offset, 0–96 px                |
-| `offsetY`                      | `24`         | Corner launcher bottom offset, 0–160 px                   |
-| `mobile`                       | `true`       | Display on screens up to 540 px                           |
-| `icon`                         | `true`       | Launcher calendar icon                                    |
-| `inlineHeight`                 | `720`        | Inline height, 240–1600 px                                |
-| `nonce`                        | empty        | Optional CSP nonce for isolated styles                    |
-| `onOpen`, `onReady`, `onClose` | —            | Lifecycle callbacks; never guest data                     |
-
-React components additionally accept `id`, `className`, `style` for their mounting element. Callback-only changes preserve a live iframe. Presentation is fixed by component type.
-
-## Framework examples and checks
-
-- [React / Next.js](examples/react/Reservations.tsx)
-- [Vue / Nuxt](examples/vue/Reservations.vue)
-- [Svelte](examples/svelte/Reservations.svelte)
-- [Angular](examples/angular/reservations.component.ts)
-- [Plain JavaScript with a bundler](examples/vanilla/main.ts)
-
-React Strict Mode, all four React components, guide/copy flows and Vue lifecycle are exercised in browser tests. The generated Next.js layout is tested in a separate packed-package consumer, including server metadata, hydration, navigation and refresh. Svelte/Angular remain integration recipes rather than a claim of full framework certification.
+<details>
+<summary><strong>Development, verification and compatibility</strong></summary>
 
 ```sh
 npm run check
@@ -221,16 +304,16 @@ npm run test:e2e
 npm pack
 ```
 
-The core has zero runtime dependencies and supports ESM, CommonJS and SSR-safe imports. Tests cover separate components, shared lifecycle, message source/origin checks, mobile viewports, cleanup, restaurant links and preview submissions. The suite uses isolated ports `4320` and `4321`. Mobile browser emulation does not replace physical device testing.
+Browser tests cover the four components, lifecycle cleanup, source/origin checks, keyboard behaviour, mobile viewports and local preview submissions. The packed-package Next.js consumer checks server metadata, hydration, navigation and refresh. Browser emulation does not replace physical-device testing.
 
-## Compatibility and scope
+The deprecated `mountReservations({ mode })` and `<menueqr-reservations mode="…">` remain for 0.1.x integrations. New code should use separate components. Optional `/button`, `/floating`, `/tab` and `/inline` subpaths remain supported; importing from the root is enough.
 
-`mountReservations({ mode })` and `<menueqr-reservations mode="…">` remain available for existing **0.1.x** integrations. They are deprecated. New integrations should use the separate components above. Do not mix legacy and new components on one target without destroying the previous instance.
+This repository contains the SDK, examples and preview tools. The WordPress plugin and hosted MenüQR application are maintained separately.
 
-This repository contains the widget SDK, examples and preview tooling. The WordPress plugin and MenüQR application are maintained separately.
+[Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Publishing](docs/publishing.md) · [Releases](https://github.com/Trillianti/menueqr-widget/releases)
 
-[Integration reference](docs/integration.md) · [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md)
+</details>
 
-## License
+---
 
-[MIT](LICENSE) for the SDK. The hosted service has its own terms and restaurant configuration. The local preview's Inter font is licensed separately under the [SIL Open Font License](scripts/fixture/fonts/LICENSE-Inter.txt).
+Built by **[MenüQR](https://www.menueqr.de)**. SDK licensed under **[MIT](LICENSE)**. The hosted service has its own terms. The local preview's Inter font uses the [SIL Open Font License](scripts/fixture/fonts/LICENSE-Inter.txt).
