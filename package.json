@@ -1,6 +1,6 @@
 {
   "name": "@menueqr/widget",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Framework-independent reservation widgets for MenüQR. Zero runtime dependencies, SSR-safe imports, typed lifecycle API.",
   "type": "module",
   "main": "./dist/index.cjs",

@@ -46,18 +46,18 @@ Use this before owner setup or when testing the workflow. It validates packaging
 Update `CHANGELOG.md`, then prepare a version on a release branch:
 
 ```sh
-npm version 0.3.1 --no-git-tag-version
+npm version 0.3.2 --no-git-tag-version
 npm run check
 git add package.json package-lock.json src/version.ts CHANGELOG.md
-git commit -m "chore: prepare widget 0.3.1"
+git commit -m "chore: prepare widget 0.3.2"
 ```
 
 Merge that commit into `main` through the normal PR checks. Then, from the updated `main` checkout:
 
 ```sh
 git pull --ff-only
-git tag v0.3.1
-git push origin v0.3.1
+git tag v0.3.2
+git push origin v0.3.2
 ```
 
 The tag must match `package.json` and the synchronized `src/version.ts`. The release commit must already belong to `main`. Tags do not move automatically when a later commit fixes a release; prepare a new version instead of rewriting a published release.
@@ -67,7 +67,7 @@ The workflow:
 - runs the package checks, release-policy tests, all browser journeys and the installed-package Next.js checks without publishing permissions;
 - packs once and passes that exact archive, checksum and source commit to the publication job;
 - uses a fresh job with no dependency installation or lifecycle hooks to publish through OIDC with provenance;
-- publishes versions such as `0.3.1` to `latest`, and explicit prereleases such as `0.4.0-beta.1` to `next`;
+- publishes versions such as `0.3.2` to `latest`, and explicit prereleases such as `0.4.0-beta.1` to `next`;
 - attaches the published archive and `SHA256SUMS` to a GitHub release after npm succeeds.
 
 Releases are serialized. A new stable version cannot move `latest` backwards. If a version already exists with identical archive integrity, a retry skips the npm publish. Different bytes under the same version stop the workflow. This also permits a tag workflow to recognize a manually bootstrapped version, although that skipped publish does not validate a new OIDC configuration.
@@ -75,7 +75,7 @@ Releases are serialized. A new stable version cannot move `latest` backwards. If
 ## Verify a release
 
 ```sh
-npm view @menueqr/widget@0.3.1 version dist.integrity
+npm view @menueqr/widget@0.3.2 version dist.integrity
 npm view @menueqr/widget dist-tags
 ```
 
