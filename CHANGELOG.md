@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.1
+
+- First automatic npm release through GitHub Trusted Publishing with provenance and the checked GitHub release archive.
+- JavaScript, React and Web Component APIs remain unchanged from 0.3.0.
+
 ## 0.3.0
 
 - Registry installation guides for npm, pnpm, Yarn and Bun, with matching copyable commands and AI prompts in the playground.
