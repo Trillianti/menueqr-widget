@@ -18,6 +18,27 @@ test.beforeEach(async ({ page }) => {
   });
   await page.goto('/');
 });
+test('React live toggle removes the local fixture baseUrl without requiring Remount', async ({
+  page,
+}) => {
+  // Intercept production navigation; the test never contacts a live restaurant.
+  await page.route('https://www.menueqr.de/**', (route) =>
+    route.fulfill({
+      contentType: 'text/html',
+      body: '<!doctype html><title>Hosted fixture</title>',
+    }),
+  );
+  await page.getByLabel('Component', { exact: true }).selectOption('inline');
+  await expect(page.locator('iframe')).toHaveAttribute('src', /127\.0\.0\.1/);
+  await page.getByLabel('Restaurant link or slug', { exact: true }).fill('demo');
+  await page.getByLabel('Preview this restaurant live', { exact: true }).check();
+  await expect(page.locator('iframe')).toHaveAttribute(
+    'src',
+    /^https:\/\/www\.menueqr\.de\/embed\/reservations\/demo\//,
+  );
+  await page.getByLabel('Preview this restaurant live', { exact: true }).uncheck();
+  await expect(page.locator('iframe')).toHaveAttribute('src', /http:\/\/127\.0\.0\.1/);
+});
 test('React onboarding renders all four real components, preserves Next preview and cleans up', async ({
   page,
 }) => {

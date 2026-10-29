@@ -33,7 +33,9 @@ restaurant: 'https://www.menueqr.de/menu/bistro-lumi/';
 
 The SDK extracts the slug from approved MenüQR URLs. Language and tracking parameters are not copied into the integration. No internal database ID, password or private API token is needed.
 
-For a live website, enable the widget/reservations in the restaurant's MenüQR settings with an eligible subscription and approve the website's origin. These permissions are enforced by the service; knowing the slug grants no administrative access.
+For a live website, enable the widget/reservations in the restaurant's MenüQR settings with an eligible subscription. Add the restaurant's HTTPS website in [Settings → Profile → Website](https://www.menueqr.de/dashboard/settings/profile/?setting=restaurant-website), or connect an additional WordPress website through the supported connection flow. These permissions are enforced by the service; knowing the slug grants no administrative access.
+
+If the service confirms that the embedding site is not approved, the widget shows the exact origin and a link to that setting. Guests can still open the public reservation page directly. Connection failures show a separate retry message. This explanation requires the corresponding hosted diagnostic endpoint; older hosted versions use the neutral fallback. See [CSP and diagnostics](docs/integration.md#browser--ssr-and-csp).
 
 ## Install
 

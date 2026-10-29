@@ -1,5 +1,6 @@
 'use client';
 import { createElement, useEffect, useRef, type CSSProperties, type ReactElement } from 'react';
+import { normalizeOptions } from '../options.js';
 import type {
   ReservationComponent,
   ReservationComponentOptions,
@@ -20,8 +21,10 @@ export function useReservationComponent(
   const { id, className, style, ...options } = props;
   useEffect(() => {
     if (!target.current) return;
-    if (controller.current) controller.current.update(options);
-    else controller.current = mount(target.current, options);
+    if (controller.current) {
+      const { mode: _mode, ...next } = normalizeOptions(options);
+      controller.current.update(next);
+    } else controller.current = mount(target.current, options);
   });
   useEffect(
     () => () => {

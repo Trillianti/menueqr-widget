@@ -91,7 +91,11 @@ export function foreground(color: string): string {
   const luminance = channels[0]! * 0.2126 + channels[1]! * 0.7152 + channels[2]! * 0.0722;
   return (luminance + 0.05) / 0.05 >= 1.05 / (luminance + 0.05) ? '#000000' : '#ffffff';
 }
-export function frameUrl(options: WidgetConfiguration, parentOrigin: string): string {
+export function frameUrl(
+  options: WidgetConfiguration,
+  parentOrigin: string,
+  externalClose = false,
+): string {
   const url = new URL(
     `/embed/reservations/${encodeURIComponent(options.restaurant)}/`,
     options.baseUrl,
@@ -100,7 +104,7 @@ export function frameUrl(options: WidgetConfiguration, parentOrigin: string): st
     lang: options.language,
     color: options.color,
     parentOrigin,
-    mode: options.mode === 'inline' ? 'inline' : 'modal',
+    mode: options.mode === 'inline' || externalClose ? 'inline' : 'modal',
   }).toString();
   return url.href;
 }

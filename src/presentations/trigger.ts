@@ -39,7 +39,24 @@ export function createTrigger(
     button.append(icon);
   }
   const text = doc.createElement('span');
+  text.className = 'trigger-label';
   text.textContent = options.label || label;
   button.append(text);
+  if (presentation === 'tab') {
+    const namespace = 'http://www.w3.org/2000/svg';
+    const close = doc.createElementNS(namespace, 'svg');
+    close.setAttribute('class', 'icon close-icon');
+    close.setAttribute('viewBox', '0 0 24 24');
+    close.setAttribute('fill', 'none');
+    close.setAttribute('stroke', 'currentColor');
+    close.setAttribute('stroke-width', '1.75');
+    close.setAttribute('stroke-linecap', 'round');
+    close.setAttribute('aria-hidden', 'true');
+    close.setAttribute('focusable', 'false');
+    const path = doc.createElementNS(namespace, 'path');
+    path.setAttribute('d', 'm6 6 12 12M18 6 6 18');
+    close.append(path);
+    button.append(close);
+  }
   return button;
 }

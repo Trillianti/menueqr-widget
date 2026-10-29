@@ -21,6 +21,23 @@ if (/^#[a-f\d]{6}$/i.test(color ?? '')) {
     (luminance + 0.05) / 0.05 >= 1.05 / (luminance + 0.05) ? '#000' : '#fff',
   );
 }
+const holdingLabels = {
+  de: 'Tischhaltezeit',
+  en: 'Table hold',
+  fr: 'Délai d’arrivée',
+  it: 'Tolleranza',
+  es: 'Margen de llegada',
+  pt: 'Tolerância',
+  pl: 'Czas oczekiwania',
+  uk: 'Час очікування',
+  tr: 'Masa bekleme süresi',
+};
+byId('holding-label').textContent = holdingLabels[language];
+byId('holding-value').textContent = new Intl.NumberFormat(language, {
+  style: 'unit',
+  unit: 'minute',
+  unitDisplay: 'long',
+}).format(15);
 document.documentElement.lang = language;
 document.querySelectorAll('[data-copy]').forEach((node) => {
   node.textContent = copy[node.dataset.copy];
@@ -83,6 +100,9 @@ function syncSelection() {
   document.querySelectorAll('.selection-summary').forEach((node) => {
     node.textContent = `${guestLabel} · ${shortDate}${selectedTime ? ` · ${selectedTime}` : ''}`;
   });
+  byId('contact-date-summary').textContent =
+    `${new Intl.DateTimeFormat(language, { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' }).format(value)}${selectedTime ? ` · ${selectedTime}` : ''}`;
+  byId('contact-party-summary').textContent = guestLabel;
   byId('next').disabled = !selectedTime;
   document
     .querySelectorAll('#times button')
@@ -120,6 +140,7 @@ for (const time of times) {
   byId('times').append(button);
 }
 function showStep(step) {
+  document.querySelector('.mw-footer .selection-summary').hidden = step === 'contact';
   byId('time-step').hidden = step !== 'time';
   byId('contact-step').hidden = step !== 'contact';
   byId('receipt').hidden = step !== 'receipt';

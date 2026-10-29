@@ -24,6 +24,25 @@ const server = http.createServer(async (req, res) => {
       return;
     }
     const url = new URL(req.url, 'http://localhost');
+    if (url.pathname === '/api/reservation-widget/access/') {
+      res.writeHead(200, {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Cache-Control': 'no-store',
+      });
+      const slug = url.searchParams.get('restaurant');
+      res.end(
+        JSON.stringify({
+          status:
+            slug === 'blocked'
+              ? 'origin_not_allowed'
+              : slug === 'unavailable'
+                ? 'unavailable'
+                : 'allowed',
+        }),
+      );
+      return;
+    }
     if (url.pathname === '/health') {
       res.writeHead(200);
       res.end('local fixture');
@@ -44,6 +63,14 @@ const server = http.createServer(async (req, res) => {
     ) {
       res.writeHead(404);
       res.end('Fixture unavailable');
+      return;
+    }
+    if (match[1] === 'blocked') {
+      res.writeHead(200, {
+        'Content-Type': 'text/html',
+        'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none'",
+      });
+      res.end('<!doctype html><title>Unapproved site fixture</title>');
       return;
     }
     const page = await readFile(new URL('./fixture/preview.html', import.meta.url));

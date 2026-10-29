@@ -480,3 +480,129 @@ body:has(.mw-shell) {
   outline: none;
   box-shadow: none;
 }
+
+/* Contact step: the hosted restaurant form owns field visibility and requirements. */
+.mw-selection {
+  padding: 12px;
+  border: 1px solid #e6e8e3;
+  border-radius: 12px;
+  background: #f7f8f5;
+  font-size: 13px;
+}
+.mw-selection-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.mw-selection-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #e6e8e3;
+  border-radius: 8px;
+  background: #fff;
+  color: #68716b;
+}
+.mw-selection-info svg,
+.mw-input-wrap svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.mw-selection-text {
+  display: grid;
+  gap: 2px;
+}
+.mw-selection-text strong {
+  font-size: 13px;
+  font-weight: 600;
+}
+.mw-selection-text > span {
+  color: #68716b;
+  font-size: 12px;
+  font-weight: 400;
+}
+.mw-contact-fields {
+  gap: 18px;
+}
+.mw-fields .mw-contact-field > label.mw-contact-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.mw-input-wrap {
+  position: relative;
+}
+.mw-input-wrap > svg {
+  position: absolute;
+  left: 14px;
+  top: 17px;
+  color: #68716b;
+  pointer-events: none;
+}
+.mw-fields .mw-input-wrap input:not([type='checkbox']):not([type='date']) {
+  padding-left: 42px;
+  min-height: 52px;
+  border-color: #8b958e;
+  border-radius: 10px;
+}
+.mw-fields .mw-notes-button {
+  min-height: 44px;
+  align-self: flex-start;
+  margin: 0;
+  padding: 0 12px;
+  border: 1px solid #dce0db;
+  border-radius: 8px;
+  color: #58615a;
+}
+
+.mw-terms {
+  margin-bottom: 18px;
+  border: 1px solid #e2e6e1;
+  border-radius: 10px;
+  background: #f8f9f6;
+}
+.mw-terms-holding {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 12px;
+  color: #58615a;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.mw-terms-holding strong {
+  margin-left: auto;
+  color: #1d2722;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.mw-terms-icon {
+  display: flex;
+  flex: none;
+  color: #68716b;
+}
+.mw-terms-icon svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Match the hosted form's shared icon-button glyph size. */
+.mw-header #close svg {
+  width: 16px;
+  height: 16px;
+}
