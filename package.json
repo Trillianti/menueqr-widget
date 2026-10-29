@@ -1,6 +1,6 @@
 {
   "name": "@menueqr/widget",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Framework-independent reservation widgets for MenüQR. Zero runtime dependencies, SSR-safe imports, typed lifecycle API.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -55,6 +55,7 @@
     "LICENSE",
     "AI_INTEGRATION.md",
     "docs/integration.md",
+    "docs/publishing.md",
     "examples"
   ],
   "sideEffects": false,
@@ -81,7 +82,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "check": "npm run typecheck && npm test && npm run build && node scripts/check-package.mjs",
+    "check": "npm run typecheck && npm test && npm run build && node scripts/check-package.mjs && npm run test:release",
+    "test:release": "node --test scripts/release.test.mjs",
+    "release:pack": "npm run build && node scripts/release.mjs pack",
     "dev": "node scripts/dev.mjs",
     "prepack": "npm run build",
     "version": "node scripts/sync-version.mjs",

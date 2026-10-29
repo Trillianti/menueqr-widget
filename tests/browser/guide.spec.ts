@@ -94,9 +94,7 @@ test('install, JSX and AI copy actions use the selected framework and normalized
   await expect(page.locator('#code')).toContainText('restaurant="my-cafe"');
   await page.getByRole('button', { name: 'Copy install command' }).click();
   const install = await page.evaluate(() => window.__widgetGuideClipboard.slice(-1)[0]);
-  expect(install).toContain(
-    'npm install https://github.com/Trillianti/menueqr-widget/releases/download/',
-  );
+  expect(install).toBe('npm install @menueqr/widget');
   await page.getByRole('button', { name: 'Copy code', exact: true }).click();
   const code = await page.evaluate(() => window.__widgetGuideClipboard.slice(-1)[0]);
   expect(code).toContain('RootLayout');
@@ -114,6 +112,33 @@ test('install, JSX and AI copy actions use the selected framework and normalized
       .nth(1)
       .screenshot({ path: 'docs/screenshots/react-guide.jpg', type: 'jpeg', quality: 85 });
   }
+});
+
+test('package-manager selection updates copied commands and prompts without remounting the form', async ({
+  page,
+}) => {
+  await page.getByLabel('Component', { exact: true }).selectOption('inline');
+  await expect(
+    page.frameLocator('iframe').getByRole('heading', { name: 'Reserve a table' }),
+  ).toBeVisible();
+  const original = await page.locator('iframe').elementHandle();
+  for (const [manager, command] of [
+    ['npm', 'npm install @menueqr/widget'],
+    ['pnpm', 'pnpm add @menueqr/widget'],
+    ['yarn', 'yarn add @menueqr/widget'],
+    ['bun', 'bun add @menueqr/widget'],
+  ]) {
+    await page.getByLabel('Package manager', { exact: true }).selectOption(manager!);
+    await expect(page.locator('#install-command')).toHaveText(command!);
+    await page.getByRole('button', { name: 'Copy install command', exact: true }).click();
+    expect(await page.evaluate(() => window.__widgetGuideClipboard.slice(-1)[0])).toBe(command);
+    await page.getByRole('button', { name: 'Copy AI prompt', exact: true }).click();
+    const prompt = await page.evaluate(() => window.__widgetGuideClipboard.slice(-1)[0]);
+    expect(prompt).toContain(command);
+    expect(prompt).not.toContain('releases/download');
+    expect(await original!.evaluate((frame) => frame.isConnected)).toBe(true);
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 test('JavaScript and Web Component instructions provide separate copyable files', async ({
   page,

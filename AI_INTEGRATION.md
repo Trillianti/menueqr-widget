@@ -6,13 +6,13 @@ Copy this brief and replace `bistro-lumi`. The playground can generate a configu
 
 Integrate the official MenüQR reservation SDK into this website. Identify the framework, client/SSR boundaries, navigation lifecycle, styles and CSP first. Keep the integration small.
 
-Install the pinned release:
+Install from the npm registry using the project's existing package manager:
 
 ```sh
-npm install https://github.com/Trillianti/menueqr-widget/releases/download/v0.2.1/menueqr-widget-0.2.1.tgz
+npm install @menueqr/widget
 ```
 
-The archive installs as `@menueqr/widget`. It is not yet published to the npm registry.
+Use `pnpm add @menueqr/widget`, `yarn add @menueqr/widget` or `bun add @menueqr/widget` if the project uses that tool. Keep its existing lockfile. A first-time maintainer must complete [publishing setup](docs/publishing.md) before registry installation is available; local SDK development does not require publication.
 
 Choose **one of four separate components**: `ReservationButton`, `ReservationFloating`, `ReservationTab`, `ReservationInline`. Do not implement a single component with a `mode` prop.
 

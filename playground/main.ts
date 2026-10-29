@@ -14,6 +14,7 @@ import {
   createIntegrationGuide,
   createIntegrationPrompt,
   type IntegrationTarget,
+  type PackageManager,
 } from '../src/prompt.js';
 import { createElement, StrictMode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -83,6 +84,7 @@ function publicConfiguration() {
     component: component(),
     integration: integration(),
     codeLanguage: field('code-syntax') as 'typescript' | 'javascript',
+    packageManager: field('package-manager') as PackageManager,
   };
 }
 function syncCode() {
@@ -212,6 +214,13 @@ byId('code-syntax').addEventListener('change', () => {
     syncCode();
   } catch (error) {
     showError(error instanceof Error ? error.message : 'Invalid restaurant.');
+  }
+});
+byId('package-manager').addEventListener('change', () => {
+  try {
+    syncCode();
+  } catch (error) {
+    showError(error instanceof Error ? error.message : 'Invalid installation settings.');
   }
 });
 byId('open').onclick = () => {

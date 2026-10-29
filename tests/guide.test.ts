@@ -11,6 +11,7 @@ import {
   nextLayoutSnippet,
   elementRegistrationSnippet,
   elementMarkupSnippet,
+  installationCommand,
 } from '../src/prompt.js';
 const input = { restaurant: 'https://www.menueqr.de/menu/bistro-lumi/', language: 'de' as const };
 async function renderExample(source: string, loader: 'jsx' | 'tsx') {
@@ -117,4 +118,28 @@ it('separates Web Component registration from HTML so each copied file is valid'
   expect(createIntegrationGuide({ ...input, integration: 'api' }).support?.code).toBe(
     '<div id="booking"></div>',
   );
+});
+
+it.each([
+  ['npm', 'npm install @menueqr/widget'],
+  ['pnpm', 'pnpm add @menueqr/widget'],
+  ['yarn', 'yarn add @menueqr/widget'],
+  ['bun', 'bun add @menueqr/widget'],
+] as const)(
+  'uses one registry package for the %s guide and AI prompt',
+  (packageManager, command) => {
+    expect(installationCommand(packageManager)).toBe(command);
+    for (const integration of ['react', 'next', 'api', 'element'] as const) {
+      expect(createIntegrationGuide({ ...input, packageManager, integration }).installCommand).toBe(
+        command,
+      );
+      const prompt = createIntegrationPrompt({ ...input, packageManager, integration });
+      expect(prompt).toContain(command);
+      expect(prompt).not.toContain('releases/download');
+      expect(prompt).not.toContain('not yet on the npm registry');
+    }
+  },
+);
+it('rejects an unsupported package manager instead of generating a shell command', () => {
+  expect(() => installationCommand('npm; echo unsafe' as never)).toThrow(/Choose npm/);
 });

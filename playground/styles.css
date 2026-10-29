@@ -534,7 +534,8 @@ footer {
   justify-content: space-between;
   gap: 12px;
 }
-#syntax-control {
+#syntax-control,
+.guide-control {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -543,14 +544,16 @@ footer {
   font-size: 12px;
   font-weight: 400;
 }
-#code-syntax {
+#code-syntax,
+#package-manager {
   width: auto;
   min-height: 36px;
   padding: 6px 10px;
   font-size: 12px;
 }
 
-#syntax-control label {
+#syntax-control label,
+.guide-control label {
   margin: 0;
   font-size: 12px;
   font-weight: 400;
