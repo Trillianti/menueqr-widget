@@ -11,6 +11,16 @@ for (const side of ['left', 'right'] as const) {
   }) => {
     await page.evaluate((side) => window.harness.mountVariant('tab', { side }), side);
     const launcher = page.getByRole('button', { name: 'Reserve', exact: true });
+    const compact = await launcher.evaluate((button) => {
+      const box = button.getBoundingClientRect();
+      const skin = getComputedStyle(button, '::before');
+      const matrix = new DOMMatrixReadOnly(skin.transform === 'none' ? undefined : skin.transform);
+      return { hit: box.width, visible: parseFloat(skin.width) * matrix.a };
+    });
+    if (page.viewportSize()!.width > 540) {
+      expect(compact.hit).toBeCloseTo(48);
+      expect(compact.visible).toBeCloseTo(40);
+    } else expect(compact.visible).toBeCloseTo(compact.hit);
     const original = await launcher.elementHandle();
     await launcher.click();
     const close = page.getByRole('button', { name: 'Close', exact: true });

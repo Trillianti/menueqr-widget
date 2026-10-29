@@ -143,6 +143,7 @@ test('playground accepts menu links, generates separate imports and opts in to l
     await page.screenshot({ path: 'docs/screenshots/modal.jpg', type: 'jpeg', quality: 85 });
   }
   await page.keyboard.press('Escape');
+  await expect(page.locator('dialog')).toHaveCount(0);
   await page.selectOption('#integration', 'element');
   await expect(page.locator('#code')).toContainText('<menueqr-reservation-floating');
   await page.getByLabel('Preview this restaurant live').check();
@@ -152,6 +153,7 @@ test('playground accepts menu links, generates separate imports and opts in to l
     /^https:\/\/www\.menueqr\.de\/embed\/reservations\/my-bistro\//,
   );
   await page.keyboard.press('Escape');
+  await expect(page.locator('dialog')).toHaveCount(0);
   await page.getByLabel('Restaurant link or slug').fill('https://evil.example/menu/bistro/');
   await page.getByLabel('Restaurant link or slug').press('Tab');
   await expect(page.getByRole('alert')).toContainText('MenüQR menu link');

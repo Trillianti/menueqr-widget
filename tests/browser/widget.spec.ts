@@ -20,6 +20,7 @@ test('four layouts load the real cross-origin fixture, close and restore focus',
     await expect(
       page.frameLocator('iframe').getByRole('heading', { name: 'Reserve a table' }),
     ).toBeVisible();
+    await expect(page.locator('iframe')).toHaveJSProperty('inert', false);
     await expect
       .poll(() => page.evaluate(() => window.harness.events().filter((e) => e === 'ready').length))
       .toBeGreaterThan(0);
@@ -209,6 +210,10 @@ test('the sandbox uses the SDK and generates the versioned AI prompt without pro
   await expect(page.getByRole('heading', { name: 'Make it yours.' })).toBeVisible();
   await page.selectOption('#component', 'floating');
   await page.getByRole('button', { name: 'Open', exact: true }).click();
+  await expect(page.locator('iframe')).toHaveJSProperty('inert', false);
+  const screenshot = test.info().outputPath('floating-open.png');
+  await page.screenshot({ path: screenshot });
+  await test.info().attach('floating-open', { path: screenshot, contentType: 'image/png' });
   const frame = page.frameLocator('iframe');
   await frame.getByRole('button', { name: '19:00', exact: true }).click();
   await frame.getByRole('button', { name: 'Continue', exact: true }).click();

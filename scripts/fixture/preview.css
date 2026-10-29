@@ -600,3 +600,9 @@ body:has(.mw-shell) {
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+
+/* Match the hosted form's shared icon-button glyph size. */
+.mw-header #close svg {
+  width: 16px;
+  height: 16px;
+}
