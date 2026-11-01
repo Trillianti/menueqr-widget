@@ -1,7 +1,7 @@
 {
   "name": "@menueqr/widget",
-  "version": "0.3.2",
-  "description": "Framework-independent reservation widgets for Men\u00fcQR. Zero runtime dependencies, SSR-safe imports, typed lifecycle API.",
+  "version": "0.4.0",
+  "description": "Framework-independent reservation widgets for MenüQR. Zero runtime dependencies, SSR-safe imports, typed lifecycle API.",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -101,7 +101,7 @@
   ],
   "sideEffects": false,
   "license": "MIT",
-  "author": "Men\u00fcQR",
+  "author": "MenüQR",
   "homepage": "https://github.com/Trillianti/menueqr-widget#readme",
   "repository": {
     "type": "git",
