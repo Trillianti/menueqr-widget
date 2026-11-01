@@ -33,7 +33,7 @@ async function fixture(t, options = {}) {
         ...(options.noCSP
           ? {}
           : {
-              'Content-Security-Policy': `default-src 'self'; frame-ancestors ${slug === 'allowed' ? (options.allowedPolicy ?? parentOrigin) : (options.blockedPolicy ?? "'none'")}`,
+              'Content-Security-Policy': `default-src 'self'; frame-ancestors ${slug === 'allowed' ? (options.allowedPolicy ?? parentOrigin) : slug === 'unavailable' ? (options.unavailablePolicy ?? "'none'") : (options.blockedPolicy ?? "'none'")}`,
             }),
         ...(options.xFrameOptions ? { 'X-Frame-Options': options.xFrameOptions } : {}),
       });
@@ -61,6 +61,16 @@ test('checks allowed, origin-denied and unavailable contracts using GET requests
     ['allowed', 'origin_not_allowed', 'unavailable'],
   );
   assert.deepEqual(methods, Array(6).fill('GET'));
+});
+
+test('accepts an unavailable feature rendered as an HTML notice on an approved site', async (t) => {
+  const { config } = await fixture(t, {
+    unavailableStatus: 200,
+    unavailablePolicy: 'https://restaurant.example',
+  });
+  const results = await checkHostedContract(config);
+  assert.equal(results[2].status, 'unavailable');
+  assert.equal(results[2].frameStatus, 200);
 });
 
 for (const [name, options, pattern] of [

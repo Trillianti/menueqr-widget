@@ -87,7 +87,7 @@ export async function checkHostedContract({ baseUrl, parentOrigin, restaurants }
         !/^(DENY|SAMEORIGIN)$/i.test(embedded.headers.get('x-frame-options') ?? ''),
         'allowed: X-Frame-Options blocks cross-origin embedding.',
       );
-    } else if (embedded.ok) {
+    } else if (scenario === 'blocked' && embedded.ok) {
       const policy = ancestors(embedded);
       assert(
         policy.length > 0 &&
@@ -95,10 +95,17 @@ export async function checkHostedContract({ baseUrl, parentOrigin, restaurants }
           !policy.some((source) => source.includes('*') || /^[a-z]+:$/i.test(source)),
         `${scenario}: a successful response must deny embedding this origin.`,
       );
-    } else {
+    } else if (!embedded.ok) {
       assert(
         [403, 404, 410].includes(embedded.status),
         `${scenario}: expected an access denial, not a server failure.`,
+      );
+    } else {
+      // Unavailable features may render a neutral notice on an approved website.
+      assert.match(
+        embedded.headers.get('content-type') ?? '',
+        /^text\/html\b/i,
+        'unavailable: expected an HTML notice.',
       );
     }
     results.push({ scenario, status, frameStatus: embedded.status });
