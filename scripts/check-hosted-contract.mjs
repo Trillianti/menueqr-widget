@@ -74,19 +74,6 @@ export async function checkHostedContract({ baseUrl, parentOrigin, restaurants }
         /^text\/html\b/i,
         'allowed: expected an HTML frame.',
       );
-      const policy = ancestors(embedded);
-      assert(
-        policy.includes(parent),
-        'allowed: CSP does not explicitly approve the embedding origin.',
-      );
-      assert(
-        !policy.some((source) => source.includes('*') || /^[a-z]+:$/i.test(source)),
-        'allowed: frame-ancestors must not permit arbitrary websites.',
-      );
-      assert(
-        !/^(DENY|SAMEORIGIN)$/i.test(embedded.headers.get('x-frame-options') ?? ''),
-        'allowed: X-Frame-Options blocks cross-origin embedding.',
-      );
     } else if (scenario === 'blocked' && embedded.ok) {
       const policy = ancestors(embedded);
       assert(
@@ -106,6 +93,21 @@ export async function checkHostedContract({ baseUrl, parentOrigin, restaurants }
         embedded.headers.get('content-type') ?? '',
         /^text\/html\b/i,
         'unavailable: expected an HTML notice.',
+      );
+    }
+    if (embedded.ok && scenario !== 'blocked') {
+      const policy = ancestors(embedded);
+      assert(
+        policy.includes(parent),
+        `${scenario}: CSP does not explicitly approve the embedding origin.`,
+      );
+      assert(
+        !policy.some((source) => source.includes('*') || /^[a-z]+:$/i.test(source)),
+        `${scenario}: frame-ancestors must not permit arbitrary websites.`,
+      );
+      assert(
+        !/^(DENY|SAMEORIGIN)$/i.test(embedded.headers.get('x-frame-options') ?? ''),
+        `${scenario}: X-Frame-Options blocks cross-origin embedding.`,
       );
     }
     results.push({ scenario, status, frameStatus: embedded.status });

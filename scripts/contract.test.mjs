@@ -30,12 +30,17 @@ async function fixture(t, options = {}) {
       assert.equal(url.searchParams.get('mode'), 'modal');
       response.writeHead(slug === 'unavailable' ? (options.unavailableStatus ?? 404) : 200, {
         'Content-Type': 'text/html',
-        ...(options.noCSP
+        ...(options.noCSP || (slug === 'unavailable' && options.unavailableNoCSP)
           ? {}
           : {
               'Content-Security-Policy': `default-src 'self'; frame-ancestors ${slug === 'allowed' ? (options.allowedPolicy ?? parentOrigin) : slug === 'unavailable' ? (options.unavailablePolicy ?? "'none'") : (options.blockedPolicy ?? "'none'")}`,
             }),
-        ...(options.xFrameOptions ? { 'X-Frame-Options': options.xFrameOptions } : {}),
+        ...((slug === 'unavailable' ? options.unavailableXFrameOptions : options.xFrameOptions)
+          ? {
+              'X-Frame-Options':
+                slug === 'unavailable' ? options.unavailableXFrameOptions : options.xFrameOptions,
+            }
+          : {}),
       });
       response.end('<!doctype html><title>Local contract fixture</title>');
     }
@@ -110,3 +115,29 @@ test('rejects credentials and unsafe URLs before any network request', async () 
   );
   assert.equal(requested, false);
 });
+
+for (const [name, overrides, pattern] of [
+  ['missing CSP', { unavailableNoCSP: true }, /CSP/],
+  [
+    'wildcard ancestors',
+    { unavailablePolicy: 'https://restaurant.example *' },
+    /arbitrary websites/,
+  ],
+  [
+    'scheme-wide ancestors',
+    { unavailablePolicy: 'https://restaurant.example https:' },
+    /arbitrary websites/,
+  ],
+  ['unapproved parent', { unavailablePolicy: 'https://other.example' }, /CSP/],
+  ['DENY', { unavailableXFrameOptions: 'DENY' }, /X-Frame-Options/],
+  ['SAMEORIGIN', { unavailableXFrameOptions: 'SAMEORIGIN' }, /X-Frame-Options/],
+]) {
+  test(`rejects unavailable HTML notice with ${name}`, async (t) => {
+    const { config } = await fixture(t, {
+      unavailableStatus: 200,
+      unavailablePolicy: 'https://restaurant.example',
+      ...overrides,
+    });
+    await assert.rejects(checkHostedContract(config), pattern);
+  });
+}
