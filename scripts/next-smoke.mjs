@@ -1,11 +1,11 @@
 import { spawn, execFileSync } from 'node:child_process';
-import { access, mkdir, mkdtemp, readFile, symlink, writeFile, open } from 'node:fs/promises';
+import { access, mkdir, mkdtemp, readFile, writeFile, open } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { dirname, join, resolve } from 'node:path';
+import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { nextLayoutSnippet } from '../dist/prompt.js';
 
-// Reuse an explicitly selected Next.js installation without modifying that project.
+// Select dependency versions from an existing installation; never modify that project.
 const root = fileURLToPath(new URL('..', import.meta.url));
 const modules = resolve(process.env.NEXT_SMOKE_MODULES ?? join(root, 'node_modules'));
 const port = Number(process.env.NEXT_SMOKE_PORT ?? 4340);
@@ -22,43 +22,12 @@ for (const name of ['next', 'react', 'react-dom']) {
 const directory = await mkdtemp(join(tmpdir(), 'menueqr-next-qa-'));
 await mkdir(join(directory, 'app/about'), { recursive: true });
 await mkdir(join(directory, 'app/api/health'), { recursive: true });
-await mkdir(join(directory, 'node_modules/@menueqr/widget'), { recursive: true });
-for (const name of [
-  'next',
-  'react',
-  'react-dom',
-  'typescript',
-  '@types/react',
-  '@types/react-dom',
-  '@types/node',
-]) {
-  // Keep compiler/types consistent with CI while reusing the chosen app runtime.
-  const runtime = ['next', 'react', 'react-dom'].includes(name);
-  let source = join(runtime ? modules : join(root, 'node_modules'), name);
-  try {
-    await access(source);
-  } catch {
-    source = join(root, 'node_modules', name);
-    await access(source);
-  }
-  const target = join(directory, 'node_modules', name);
-  await mkdir(dirname(target), { recursive: true });
-  await symlink(source, target, 'dir');
-}
-const manifest = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'));
 const [{ filename }] = JSON.parse(
   execFileSync('npm', ['pack', '--ignore-scripts', '--json', '--pack-destination', directory], {
     cwd: root,
     encoding: 'utf8',
   }),
 );
-execFileSync('tar', [
-  '-xzf',
-  join(directory, filename),
-  '-C',
-  join(directory, 'node_modules/@menueqr/widget'),
-  '--strip-components=1',
-]);
 await writeFile(
   join(directory, 'package.json'),
   JSON.stringify(
@@ -71,8 +40,17 @@ await writeFile(
         react: JSON.parse(await readFile(join(modules, 'react/package.json'), 'utf8')).version,
         'react-dom': JSON.parse(await readFile(join(modules, 'react-dom/package.json'), 'utf8'))
           .version,
-        '@menueqr/widget': manifest.version,
+        '@menueqr/widget': `file:${join(directory, filename)}`,
       },
+      devDependencies: Object.fromEntries(
+        await Promise.all(
+          ['typescript', '@types/react', '@types/react-dom', '@types/node'].map(async (name) => [
+            name,
+            JSON.parse(await readFile(join(root, 'node_modules', name, 'package.json'), 'utf8'))
+              .version,
+          ]),
+        ),
+      ),
     },
     null,
     2,
@@ -99,7 +77,7 @@ await writeFile(join(directory, 'next.config.mjs'), 'export default { devIndicat
 const log = await open(join(directory, 'next.log'), 'a');
 const children = [];
 function stop(child, signal = 'SIGTERM') {
-  if (!child?.pid) return;
+  if (!child?.pid || child.exitCode !== null) return;
   try {
     if (process.platform === 'win32') child.kill(signal);
     else process.kill(-child.pid, signal);
@@ -118,18 +96,41 @@ process.once('SIGTERM', () => {
   cleanup();
   process.exit(143);
 });
+async function runStep(command, args) {
+  const child = spawn(command, args, {
+    cwd: directory,
+    env: { ...process.env, NEXT_TELEMETRY_DISABLED: '1' },
+    stdio: ['ignore', log.fd, log.fd],
+    detached: process.platform !== 'win32',
+  });
+  children.push(child);
+  const timer = setTimeout(() => stop(child, 'SIGKILL'), 240000);
+  try {
+    const code = await new Promise((resolve, reject) => {
+      child.once('error', reject);
+      child.once('exit', (code) => resolve(code ?? 1));
+    });
+    if (code !== 0) throw Error(`Next.js QA ${args[0]} failed (${code}).`);
+  } finally {
+    clearTimeout(timer);
+  }
+}
 try {
+  console.log(`Isolated Next.js consumer: ${directory}`);
+  console.log('Installing the packed SDK and building a production app with Turbopack.');
+  await runStep('npm', [
+    'install',
+    '--ignore-scripts',
+    '--package-lock=false',
+    '--no-audit',
+    '--no-fund',
+    '--prefer-offline',
+  ]);
+  const nextCLI = join(directory, 'node_modules/next/dist/bin/next');
+  await runStep(process.execPath, [nextCLI, 'build']);
   const next = spawn(
     process.execPath,
-    [
-      join(modules, 'next/dist/bin/next'),
-      'dev',
-      '--webpack',
-      '--hostname',
-      '127.0.0.1',
-      '--port',
-      String(port),
-    ],
+    [nextCLI, 'start', '--hostname', '127.0.0.1', '--port', String(port)],
     {
       cwd: directory,
       env: { ...process.env, NEXT_TELEMETRY_DISABLED: '1' },
@@ -142,8 +143,7 @@ try {
   next.on('error', (error) => {
     startupError = error;
   });
-  console.log(`Isolated Next.js consumer: ${directory}`);
-  console.log(`Starting Next.js on http://127.0.0.1:${port}`);
+  console.log(`Starting the production Next.js server on http://127.0.0.1:${port}`);
   const deadline = Date.now() + 120000;
   let ready = false;
   while (Date.now() < deadline) {

@@ -1,0 +1,40 @@
+name: Hosted widget contract
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: Test service HTTPS origin
+        required: true
+      parent_origin:
+        description: Approved test website origin
+        required: true
+      allowed:
+        description: Public slug of an allowed test restaurant
+        required: true
+      blocked:
+        description: Public slug denied for this website
+        required: true
+      unavailable:
+        description: Public slug with reservations unavailable
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      WIDGET_CONTRACT_BASE_URL: ${{ inputs.base_url }}
+      WIDGET_CONTRACT_PARENT_ORIGIN: ${{ inputs.parent_origin }}
+      WIDGET_CONTRACT_ALLOWED: ${{ inputs.allowed }}
+      WIDGET_CONTRACT_BLOCKED: ${{ inputs.blocked }}
+      WIDGET_CONTRACT_UNAVAILABLE: ${{ inputs.unavailable }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - run: npm run check:hosted

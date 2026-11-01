@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- Restored keyboard access after retrying a failed Floating frame and kept loading state scoped to each frame.
+- Preserved icon, zero offsets and inline height in generated JavaScript, React, Next.js and custom-element guides.
+- Added CommonJS declarations and packed consumer checks for Node16 and NodeNext module resolution.
+- Kept long launcher labels within narrow screens and containers while preserving accessible names.
+- Added `onLoadError` and `menueqr:loaderror` with stable, guest-data-free failure codes.
+- Added recovery, keyboard, label and strict CSP regressions, production Next.js/Turbopack checks, React 18 coverage and local/read-only hosted contract checks.
+- Added reviewed release policies, CODEOWNERS, dependency review, scheduled audits and Dependabot configuration.
+
 ## 0.3.2
 
 - Redesigned README with screenshots of the actual four widgets and the phone booking flow.

@@ -257,6 +257,7 @@ No password, private token or database ID belongs in the integration. Knowing th
 | `inlineHeight`                   | `720`        | Inline form height: 240–1600 px                              |
 | `nonce`                          | Empty        | Server-generated CSP nonce for the widget's styles           |
 | `onOpen` / `onReady` / `onClose` | —            | Lifecycle callbacks; no guest data                           |
+| `onLoadError`                    | —            | Stable frame failure code; no guest data                     |
 
 React also accepts `id`, `className` and `style` for the mount element. Guest fields and reservation conditions are configured **in the restaurant dashboard**, so every integration uses the same settings.
 
@@ -305,6 +306,12 @@ npm pack
 ```
 
 Browser tests cover the four components, lifecycle cleanup, source/origin checks, keyboard behaviour, mobile viewports and local preview submissions. The packed-package Next.js consumer checks server metadata, hydration, navigation and refresh. Browser emulation does not replace physical-device testing.
+
+Package checks compile clean ESM and CommonJS consumers with Node16 and NodeNext
+resolution. CI also checks React 18, strict CSP nonces, retry keyboard access and
+long labels. Next.js consumer QA runs `next build` with Turbopack and `next start`.
+Local service-contract tests and an opt-in read-only staging check are described
+in [security controls](docs/security-controls.md).
 
 The deprecated `mountReservations({ mode })` and `<menueqr-reservations mode="…">` remain for 0.1.x integrations. New code should use separate components. Optional `/button`, `/floating`, `/tab` and `/inline` subpaths remain supported; importing from the root is enough.
 

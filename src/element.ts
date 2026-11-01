@@ -81,6 +81,8 @@ function registerElement(name: string, component?: WidgetMode): boolean {
         this.dispatchEvent(new CustomEvent('menueqr:ready', { bubbles: true }));
       result.onClose = (detail) =>
         this.dispatchEvent(new CustomEvent('menueqr:close', { bubbles: true, detail }));
+      result.onLoadError = (detail) =>
+        this.dispatchEvent(new CustomEvent('menueqr:loaderror', { bubbles: true, detail }));
       return result;
     }
     open(): boolean {

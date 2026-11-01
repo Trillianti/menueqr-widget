@@ -1,52 +1,92 @@
 {
   "name": "@menueqr/widget",
   "version": "0.3.2",
-  "description": "Framework-independent reservation widgets for MenüQR. Zero runtime dependencies, SSR-safe imports, typed lifecycle API.",
+  "description": "Framework-independent reservation widgets for Men\u00fcQR. Zero runtime dependencies, SSR-safe imports, typed lifecycle API.",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     },
     "./element": {
-      "types": "./dist/element.d.ts",
-      "import": "./dist/element.js",
-      "require": "./dist/element.cjs"
+      "import": {
+        "types": "./dist/element.d.ts",
+        "default": "./dist/element.js"
+      },
+      "require": {
+        "types": "./dist/element.d.cts",
+        "default": "./dist/element.cjs"
+      }
     },
     "./package.json": "./package.json",
     "./prompt": {
-      "types": "./dist/prompt.d.ts",
-      "import": "./dist/prompt.js",
-      "require": "./dist/prompt.cjs"
+      "import": {
+        "types": "./dist/prompt.d.ts",
+        "default": "./dist/prompt.js"
+      },
+      "require": {
+        "types": "./dist/prompt.d.cts",
+        "default": "./dist/prompt.cjs"
+      }
     },
     "./button": {
-      "types": "./dist/components/button.d.ts",
-      "import": "./dist/components/button.js",
-      "require": "./dist/components/button.cjs"
+      "import": {
+        "types": "./dist/components/button.d.ts",
+        "default": "./dist/components/button.js"
+      },
+      "require": {
+        "types": "./dist/components/button.d.cts",
+        "default": "./dist/components/button.cjs"
+      }
     },
     "./floating": {
-      "types": "./dist/components/floating.d.ts",
-      "import": "./dist/components/floating.js",
-      "require": "./dist/components/floating.cjs"
+      "import": {
+        "types": "./dist/components/floating.d.ts",
+        "default": "./dist/components/floating.js"
+      },
+      "require": {
+        "types": "./dist/components/floating.d.cts",
+        "default": "./dist/components/floating.cjs"
+      }
     },
     "./tab": {
-      "types": "./dist/components/tab.d.ts",
-      "import": "./dist/components/tab.js",
-      "require": "./dist/components/tab.cjs"
+      "import": {
+        "types": "./dist/components/tab.d.ts",
+        "default": "./dist/components/tab.js"
+      },
+      "require": {
+        "types": "./dist/components/tab.d.cts",
+        "default": "./dist/components/tab.cjs"
+      }
     },
     "./inline": {
-      "types": "./dist/components/inline.d.ts",
-      "import": "./dist/components/inline.js",
-      "require": "./dist/components/inline.cjs"
+      "import": {
+        "types": "./dist/components/inline.d.ts",
+        "default": "./dist/components/inline.js"
+      },
+      "require": {
+        "types": "./dist/components/inline.d.cts",
+        "default": "./dist/components/inline.cjs"
+      }
     },
     "./react": {
-      "types": "./dist/react.d.ts",
-      "import": "./dist/react.js",
-      "require": "./dist/react.cjs"
+      "import": {
+        "types": "./dist/react.d.ts",
+        "default": "./dist/react.js"
+      },
+      "require": {
+        "types": "./dist/react.d.cts",
+        "default": "./dist/react.cjs"
+      }
     }
   },
   "files": [
@@ -56,11 +96,12 @@
     "AI_INTEGRATION.md",
     "docs/integration.md",
     "docs/publishing.md",
-    "examples"
+    "examples",
+    "docs/security-controls.md"
   ],
   "sideEffects": false,
   "license": "MIT",
-  "author": "MenüQR",
+  "author": "Men\u00fcQR",
   "homepage": "https://github.com/Trillianti/menueqr-widget#readme",
   "repository": {
     "type": "git",
@@ -78,11 +119,11 @@
     "typescript"
   ],
   "scripts": {
-    "build": "node scripts/build.mjs && tsc -p tsconfig.build.json",
+    "build": "node scripts/build.mjs && tsc -p tsconfig.build.json && node scripts/build-declarations.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "check": "npm run typecheck && npm test && npm run build && node scripts/check-package.mjs && npm run test:release",
+    "check": "npm run typecheck && npm test && npm run build && node scripts/check-package.mjs && node scripts/check-consumer-types.mjs && npm run test:release && npm run test:contract",
     "test:release": "node --test scripts/release.test.mjs",
     "release:pack": "npm run build && node scripts/release.mjs pack",
     "dev": "node scripts/dev.mjs",
@@ -90,7 +131,9 @@
     "version": "node scripts/sync-version.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test:next": "npm run build && node scripts/next-smoke.mjs"
+    "test:next": "npm run build && node scripts/next-smoke.mjs",
+    "test:contract": "node --test scripts/contract.test.mjs",
+    "check:hosted": "node scripts/check-hosted-contract.mjs"
   },
   "devDependencies": {
     "@playwright/test": "1.64.1",

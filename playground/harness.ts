@@ -27,6 +27,8 @@ const defaults = {
   onOpen: () => events.push('open'),
   onReady: () => events.push('ready'),
   onClose: () => events.push('close'),
+  onLoadError: ({ code }: import('../src/types.js').FrameLoadError) =>
+    events.push(`loaderror:${code}`),
 };
 const components = {
   button: mountReservationButton,

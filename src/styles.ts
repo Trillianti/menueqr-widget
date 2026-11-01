@@ -4,17 +4,16 @@ export const styles = `
 button,a{-webkit-tap-highlight-color:transparent}
 button{font:inherit;cursor:pointer}button:disabled{cursor:default}
 button:focus-visible,a:focus-visible{outline:2px solid #fff;outline-offset:2px;box-shadow:0 0 0 5px #1d2722}
-.trigger{display:inline-flex;align-items:center;justify-content:center;gap:9px;border:1px solid transparent;border-radius:10px;padding:14px 20px;min-height:48px;max-width:calc(100vw - 32px);font:600 14px/1.4 system-ui,sans-serif;background:var(--mw-color);color:var(--mw-foreground)}
+.trigger{display:inline-flex;align-items:center;justify-content:center;gap:9px;border:1px solid transparent;border-radius:10px;padding:14px 20px;min-height:48px;max-width:min(100%,calc(100vw - 32px));font:600 14px/1.4 system-ui,sans-serif;background:var(--mw-color);color:var(--mw-foreground)}
 .icon{display:block;width:20px;height:20px;flex:none}
 .close-icon{position:absolute;top:calc(50% - 10px);left:calc(50% - 10px);opacity:0;pointer-events:none}
-.trigger-label{white-space:nowrap}
+.trigger-label{min-width:0;min-height:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .trigger[data-mode=button]{transition:border-color 120ms linear,box-shadow 120ms linear}
 .trigger[data-mode=button]:not(:disabled):active:not(:focus-visible){box-shadow:inset 0 0 0 1px currentColor}
 @media(hover:hover){.trigger[data-mode=button]:not(:disabled):hover:not(:focus-visible){border-color:color-mix(in srgb,currentColor 20%,transparent);box-shadow:0 4px 12px #101b1414}}
 .trigger[data-mode=floating]{position:fixed;bottom:max(var(--mw-offset-y),env(safe-area-inset-bottom));right:var(--mw-offset-x);border-radius:100px;z-index:99990}
 .trigger[data-mode=floating][data-side=left]{right:auto;left:var(--mw-offset-x)}
-.trigger[data-mode=floating]>.trigger-label{min-width:0;overflow:hidden;text-overflow:ellipsis}
-.trigger[data-mode=tab]{position:fixed;top:50%;right:0;transform:translateY(-50%);writing-mode:vertical-rl;width:48px;padding:18px 8px 18px 16px;border:0;border-radius:10px 0 0 10px;background:transparent;overflow:hidden;isolation:isolate;z-index:99990}
+.trigger[data-mode=tab]{position:fixed;top:50%;right:0;transform:translateY(-50%);writing-mode:vertical-rl;width:48px;max-height:calc(100dvh - 32px);padding:18px 8px 18px 16px;border:0;border-radius:10px 0 0 10px;background:transparent;overflow:hidden;isolation:isolate;z-index:99990}
 .trigger[data-mode=tab][data-side=left]{right:auto;left:0;padding-left:8px;padding-right:16px;border-radius:0 10px 10px 0}
 .trigger[data-mode=tab]::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;background:var(--mw-color);transform:scaleX(.8333333333);transform-origin:right center}
 .trigger[data-mode=tab][data-side=left]::before{transform-origin:left center}

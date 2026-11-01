@@ -47,6 +47,7 @@ describe('configuration boundary', () => {
     { restaurant: 'bistro', mode: 'evil' },
     { restaurant: 'bistro', language: 'ua' },
     { restaurant: 'bistro', onReady: 'script' },
+    { restaurant: 'bistro', onLoadError: 'script' },
   ])('rejects invalid options before mounting: %j', (input) => {
     expect(() => normalizeOptions(input as never)).toThrow(TypeError);
   });
