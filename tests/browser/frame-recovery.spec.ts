@@ -35,30 +35,150 @@ for (const component of ['button', 'floating', 'tab', 'inline'] as const) {
   });
 }
 
-test('unavailable service has a neutral error; retry uses a fresh iframe and can recover', async ({
+for (const component of ['button', 'floating', 'tab', 'inline'] as const) {
+  test(`${component}: retry replaces the failed frame and restores keyboard access`, async ({
+    page,
+  }) => {
+    await page.evaluate((component) => {
+      window.harness.mountVariant(component, { restaurant: 'unavailable' });
+      window.harness.open();
+    }, component);
+    await expect(page.getByRole('heading', { name: 'Reservation could not load' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Open website settings' })).toHaveCount(0);
+    const oldFrame = await page.locator('iframe').elementHandle();
+    await page.route('**/embed/reservations/unavailable/**', async (route) => {
+      await route.fulfill({ path: 'scripts/fixture/preview.html', contentType: 'text/html' });
+    });
+    await page.getByRole('button', { name: 'Try again', exact: true }).click();
+    await expect(
+      page.frameLocator('iframe').getByRole('heading', { name: 'Reserve a table' }),
+    ).toBeVisible();
+    await expect(page.locator('.frame-recovery')).toHaveCount(0);
+    await expect(page.locator('iframe')).toBeVisible();
+    await expect(page.locator('iframe')).toHaveJSProperty('inert', false);
+    expect(await oldFrame!.evaluate((frame) => frame.isConnected)).toBe(false);
+    await expect
+      .poll(() =>
+        page.evaluate(() => window.harness.events().filter((event) => event === 'ready').length),
+      )
+      .toBe(1);
+    if (component === 'inline') {
+      await page.locator('#original').evaluate((node) => {
+        node.tabIndex = 0;
+        node.focus();
+      });
+    } else await page.locator('dialog').evaluate((dialog) => (dialog as HTMLElement).focus());
+    let entered = false;
+    for (let index = 0; index < 8 && !entered; index++) {
+      await page.keyboard.press('Tab');
+      entered = await page.evaluate(() => {
+        const host = document.querySelector('[data-menueqr-widget-host]');
+        return host?.shadowRoot?.activeElement?.tagName === 'IFRAME';
+      });
+    }
+    expect(entered).toBe(true);
+    await page.frameLocator('iframe').getByRole('button', { name: '18:00', exact: true }).click();
+    await page
+      .frameLocator('iframe')
+      .getByRole('button', { name: 'Continue', exact: true })
+      .click();
+    await expect(
+      page.frameLocator('iframe').getByRole('heading', { name: 'Contact details', exact: true }),
+    ).toBeVisible();
+    if (component !== 'inline') {
+      await page.keyboard.press('Escape');
+      await expect(page.locator('dialog')).toHaveCount(0);
+      await expect(
+        page.getByRole('button', {
+          name: component === 'button' ? 'Reserve a table' : 'Reserve',
+          exact: true,
+        }),
+      ).toBeFocused();
+    }
+  });
+}
+
+for (const [restaurant, code] of [
+  ['blocked', 'origin_not_allowed'],
+  ['unavailable', 'unavailable'],
+  ['sandbox-bistro', 'timeout'],
+] as const) {
+  test(`load errors report ${code} exactly once without guest data`, async ({ page }) => {
+    if (code === 'timeout') await page.route('**/fixture/preview.js', (route) => route.abort());
+    await page.clock.install();
+    await page.evaluate(
+      (restaurant) => window.harness.mountVariant('inline', { restaurant }),
+      restaurant,
+    );
+    if (code === 'timeout') await page.clock.fastForward(8000);
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          window.harness.events().filter((event) => event.startsWith('loaderror:')),
+        ),
+      )
+      .toEqual([`loaderror:${code}`]);
+    await page.clock.fastForward(20000);
+    expect(
+      await page.evaluate(() =>
+        window.harness.events().filter((event) => event.startsWith('loaderror:')),
+      ),
+    ).toEqual([`loaderror:${code}`]);
+  });
+}
+
+test('replacing an error callback preserves the frame and invokes the new callback', async ({
+  page,
+}) => {
+  await page.evaluate(() => window.harness.mountVariant('inline', { restaurant: 'blocked' }));
+  const frame = await page.locator('iframe').elementHandle();
+  await page.evaluate(() =>
+    window.harness.update({
+      onLoadError: ({ code }) => {
+        document.body.dataset.loadError = code;
+      },
+    }),
+  );
+  await expect
+    .poll(() => page.evaluate(() => document.body.dataset.loadError))
+    .toBe('origin_not_allowed');
+  expect(await frame!.evaluate((frame) => frame.isConnected)).toBe(true);
+});
+
+test('destroying from a load-error callback cleans up its recovery panel and scroll lock', async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.evaluate(() => {
+    window.harness.mountVariant('floating', {
+      restaurant: 'unavailable',
+      onLoadError: () => window.harness.destroy(),
+    });
+    window.harness.open();
+  });
+  await expect(page.locator('[data-menueqr-widget-host]')).toHaveCount(0);
+  await expect(page.locator('.frame-recovery')).toHaveCount(0);
+  expect(await page.evaluate(() => document.body.style.overflow)).toBe('');
+  expect(errors).toEqual([]);
+});
+
+test('custom elements bubble a separate load-error event with only the stable code', async ({
   page,
 }) => {
   await page.evaluate(() => {
-    window.harness.mountVariant('inline', { restaurant: 'unavailable' });
+    window.harness.defineAll();
+    const element = document.createElement('menueqr-reservation-inline');
+    element.setAttribute('restaurant', 'blocked');
+    element.setAttribute('base-url', `http://127.0.0.1:${Number(location.port) + 1}`);
+    document.body.addEventListener('menueqr:loaderror', (event) => {
+      document.body.dataset.loadError = JSON.stringify((event as CustomEvent).detail);
+    });
+    document.querySelector('#booking')!.append(element);
   });
-  await expect(page.getByRole('heading', { name: 'Reservation could not load' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Open website settings' })).toHaveCount(0);
-  const oldFrame = await page.locator('iframe').elementHandle();
-  await page.route('**/embed/reservations/unavailable/**', async (route) => {
-    await route.fulfill({ path: 'scripts/fixture/preview.html', contentType: 'text/html' });
-  });
-  await page.getByRole('button', { name: 'Try again', exact: true }).click();
-  await expect(
-    page.frameLocator('iframe').getByRole('heading', { name: 'Reserve a table' }),
-  ).toBeVisible();
-  await expect(page.locator('.frame-recovery')).toHaveCount(0);
-  await expect(page.locator('iframe')).toBeVisible();
-  expect(await oldFrame!.evaluate((frame) => frame.isConnected)).toBe(false);
   await expect
-    .poll(() =>
-      page.evaluate(() => window.harness.events().filter((event) => event === 'ready').length),
-    )
-    .toBe(1);
+    .poll(() => page.evaluate(() => document.body.dataset.loadError))
+    .toBe('{"code":"origin_not_allowed"}');
 });
 
 test('successful initialization makes no diagnostics request', async ({ page }) => {

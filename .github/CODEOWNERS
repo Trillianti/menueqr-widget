@@ -1,0 +1,7 @@
+# Release and security changes require the repository owner's review.
+/.github/ @Trillianti
+/scripts/release* @Trillianti
+/scripts/build* @Trillianti
+/package.json @Trillianti
+/package-lock.json @Trillianti
+/SECURITY.md @Trillianti

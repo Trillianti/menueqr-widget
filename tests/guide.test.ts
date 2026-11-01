@@ -14,14 +14,23 @@ import {
   installationCommand,
 } from '../src/prompt.js';
 const input = { restaurant: 'https://www.menueqr.de/menu/bistro-lumi/', language: 'de' as const };
-async function renderExample(source: string, loader: 'jsx' | 'tsx') {
+async function renderExample(
+  source: string,
+  loader: 'jsx' | 'tsx',
+  captured?: Record<string, unknown>[],
+) {
   const { code } = await transform(source, { loader, jsx: 'automatic', format: 'cjs' });
   const widgets = Object.fromEntries(
     ['ReservationButton', 'ReservationFloating', 'ReservationTab', 'ReservationInline'].map(
       (name) => [
         name,
-        (props: Record<string, unknown>) =>
-          createElement('span', { 'data-component': name, 'data-options': JSON.stringify(props) }),
+        (props: Record<string, unknown>) => {
+          captured?.push(props);
+          return createElement('span', {
+            'data-component': name,
+            'data-options': JSON.stringify(props),
+          });
+        },
       ],
     ),
   );
@@ -143,3 +152,63 @@ it.each([
 it('rejects an unsupported package manager instead of generating a shell command', () => {
   expect(() => installationCommand('npm; echo unsafe' as never)).toThrow(/Choose npm/);
 });
+
+for (const component of ['button', 'floating', 'tab', 'inline'] as const) {
+  it(`${component}: generated API, JSX and HTML retain explicit false, zero and dimension options`, async () => {
+    const options = {
+      restaurant: 'bistro-lumi',
+      language: 'fr' as const,
+      color: '#aa3300',
+      side: 'left' as const,
+      mobile: false,
+      icon: false,
+      offsetX: 0,
+      offsetY: 0,
+      inlineHeight: 1000,
+    };
+    const guide = createIntegrationGuide({ ...options, component, integration: 'api' });
+    let capturedAPI: Record<string, unknown> | undefined;
+    runInNewContext(
+      guide.primary.code.replace(/^import[^\n]+\n/, ''),
+      {
+        [`mountReservation${component[0]!.toUpperCase()}${component.slice(1)}`]: (
+          _target: string,
+          config: Record<string, unknown>,
+        ) => {
+          capturedAPI = config;
+          return { destroy() {} };
+        },
+      },
+      { timeout: 1000, contextCodeGeneration: { strings: false, wasm: false } },
+    );
+    expect(capturedAPI).toEqual(options);
+    for (const integration of ['react', 'next'] as const) {
+      const captured: Record<string, unknown>[] = [];
+      const jsx = createIntegrationGuide({ ...options, component, integration }).primary.code;
+      await renderExample(jsx, 'tsx', captured);
+      const { side, ...shared } = options;
+      expect(captured).toEqual([
+        { ...shared, ...(['floating', 'tab'].includes(component) ? { side } : {}) },
+      ]);
+      expect(createIntegrationPrompt({ ...options, component, integration })).toContain(jsx);
+    }
+    const html = elementMarkupSnippet({ ...options, component });
+    const attributes = Object.fromEntries(
+      [...html.matchAll(/([a-z-]+)="([^"]*)"/g)].map((match) => [match[1], match[2]]),
+    );
+    expect(attributes).toEqual({
+      restaurant: 'bistro-lumi',
+      language: 'fr',
+      color: '#aa3300',
+      side: 'left',
+      mobile: 'false',
+      icon: 'false',
+      'offset-x': '0',
+      'offset-y': '0',
+      'inline-height': '1000',
+    });
+    expect(createIntegrationPrompt({ ...options, component, integration: 'element' })).toContain(
+      html,
+    );
+  });
+}

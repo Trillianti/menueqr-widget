@@ -2,6 +2,10 @@ export const languages = ['de', 'en', 'fr', 'it', 'es', 'pt', 'pl', 'uk', 'tr'] 
 export type WidgetLanguage = (typeof languages)[number];
 export type WidgetMode = 'button' | 'floating' | 'tab' | 'inline';
 export type CloseReason = 'api' | 'escape' | 'backdrop' | 'frame' | 'update' | 'destroy';
+export interface FrameLoadError {
+  /** No guest data or service response body is exposed. */
+  code: 'origin_not_allowed' | 'unavailable' | 'timeout';
+}
 export interface ReservationWidgetOptions {
   /** Public restaurant slug or MenüQR menu link. No account credential. */
   restaurant: string;
@@ -23,10 +27,15 @@ export interface ReservationWidgetOptions {
   onOpen?: (() => void) | undefined;
   onReady?: (() => void) | undefined;
   onClose?: ((event: { reason: CloseReason }) => void) | undefined;
+  /** Fires once per failed frame load; a retry can report a new failure. */
+  onLoadError?: ((event: FrameLoadError) => void) | undefined;
 }
+type WidgetCallbacks = Pick<
+  ReservationWidgetOptions,
+  'onOpen' | 'onReady' | 'onClose' | 'onLoadError'
+>;
 export type WidgetConfiguration = Readonly<
-  Required<Omit<ReservationWidgetOptions, 'onOpen' | 'onReady' | 'onClose'>> &
-    Pick<ReservationWidgetOptions, 'onOpen' | 'onReady' | 'onClose'>
+  Required<Omit<ReservationWidgetOptions, keyof WidgetCallbacks>> & WidgetCallbacks
 >;
 export interface ReservationWidget {
   readonly isOpen: boolean;

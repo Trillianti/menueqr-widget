@@ -43,7 +43,20 @@ With Next.js, React and React DOM already installed in a local project:
 NEXT_SMOKE_MODULES=/absolute/path/to/next-project/node_modules npm run test:next
 ```
 
-The module directory is read-only input. This command builds and packs the SDK, creates a disposable Next.js app in the system temporary folder and runs its generated root layout on loopback port `4340`. Browser tests intercept hosted-form requests locally. It verifies server metadata, client hydration, route transitions and refresh, then stops only its own server processes. `NEXT_SMOKE_PORT` changes that test port if needed. These variables are development-only and are not required by an installed widget.
+The module directory is read-only input for selecting runtime versions. This
+command builds and packs the SDK, installs that archive and the selected runtime
+versions in a disposable Next.js app, runs a production `next build` with Turbopack
+and starts it on loopback port `4340`. Registry packages may be downloaded into
+the disposable app; the selected project is never modified. Browser tests
+intercept hosted-form requests locally. QA verifies server metadata, client
+hydration, route transitions and refresh, then stops only its own server
+processes. `NEXT_SMOKE_PORT` changes that test port if needed. These variables are
+development-only and are not required by an installed widget.
+
+`npm run check` also compiles installed ESM/CommonJS consumers and runs local
+service-contract tests. See [security controls](docs/security-controls.md) for
+repository rules and optional read-only staging verification. CI additionally
+checks the React 18 runtime and types; the default lockfile uses React 19.
 
 ## Releases
 

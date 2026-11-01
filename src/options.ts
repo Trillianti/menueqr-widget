@@ -43,7 +43,7 @@ export function normalizeOptions(input: ReservationWidgetOptions): WidgetConfigu
     fail('nonce must be a string of at most 256 characters.');
   if (typeof mobile !== 'boolean' || typeof icon !== 'boolean')
     fail('mobile and icon must be booleans.');
-  for (const key of ['onOpen', 'onReady', 'onClose'] as const)
+  for (const key of ['onOpen', 'onReady', 'onClose', 'onLoadError'] as const)
     if (input[key] !== undefined && typeof input[key] !== 'function')
       fail(`${key} must be a function.`);
   let origin: URL;
@@ -81,6 +81,7 @@ export function normalizeOptions(input: ReservationWidgetOptions): WidgetConfigu
     onOpen: input.onOpen,
     onReady: input.onReady,
     onClose: input.onClose,
+    onLoadError: input.onLoadError,
   });
 }
 export function foreground(color: string): string {

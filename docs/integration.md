@@ -32,6 +32,7 @@ const widget = mountReservationButton(element, {
   onOpen: () => console.log('Opened'),
   onReady: () => console.log('Form initialized'),
   onClose: ({ reason }) => console.log('Closed', reason),
+  onLoadError: ({ code }) => console.log('Form unavailable', code),
 });
 ```
 
@@ -43,6 +44,12 @@ const widget = mountReservationButton(element, {
 - `isOpen`: whether an overlay or inline frame is displayed; it does not imply successful loading or booking.
 
 Close reasons: `api`, `escape`, `backdrop`, `frame`, `update`, `destroy`.
+
+`onLoadError({ code })` reports `origin_not_allowed`, `unavailable` or `timeout`
+once per failed iframe load. It contains no guest data, response body or private
+service details. A retry uses a new iframe and can report a new failure; a late
+trusted ready message can still recover an existing frame. Updating callbacks
+alone preserves the frame. Callback failures are isolated from widget cleanup.
 
 The Tab component uses a 40 px desktop face inside a 48 px pointer target. It slides from its configured side and turns its launcher into a close button. On small screens it opens a full-screen sheet with a close button in the top-right corner, clear of the form and its footer. Reduced-motion preferences use a short fade instead of movement. The ordinary Button opens a centered dialog from the launcher's direction, or a full-screen sheet on mobile. Its press feedback and icon movement respect reduced-motion preferences too. Floating grows from the actual launcher capsule into a corner panel, or a full-screen form on mobile, and collapses back to the same button. The real launcher stays mounted, visible and visually unchanged throughout the transition; native modality blocks interaction with it while the overlay is open. No cloned launcher face is swapped in. The form stays at its normal size while the surrounding surface changes shape. The native window stays hidden until its source geometry is prepared, and the temporary close control hands over only after the hosted form is fully painted. It becomes interactive after the entrance completes. `close()` animates Button, Floating and Tab exits; `isOpen` stays true until the exit finishes, then `onClose` fires and launcher focus returns. Calling `open()` during that exit reverses it without reloading the form or discarding the draft. `update()` and `destroy()` clean up immediately, including during a transition.
 
@@ -62,12 +69,13 @@ Attributes: `restaurant`, `language`, `color`, `label`, `side`, `offset-x`, `off
 
 Changes are batched in a microtask. Attribute removal restores defaults. Removing the element destroys its controller. Invalid updates emit `menueqr:error` and preserve the previous instance.
 
-| Event           | `detail`                                |
-| --------------- | --------------------------------------- |
-| `menueqr:open`  | None                                    |
-| `menueqr:ready` | None                                    |
-| `menueqr:close` | `{ reason }`                            |
-| `menueqr:error` | `{ message }` for invalid configuration |
+| Event               | `detail`                                |
+| ------------------- | --------------------------------------- |
+| `menueqr:open`      | None                                    |
+| `menueqr:ready`     | None                                    |
+| `menueqr:close`     | `{ reason }`                            |
+| `menueqr:error`     | `{ message }` for invalid configuration |
+| `menueqr:loaderror` | `{ code }` for a failed frame load      |
 
 Events bubble from the custom element and contain no guest data. The element also exposes `open()` / `close()`.
 
@@ -106,6 +114,11 @@ Unavailable frame: check widget/reservations enabled, subscription eligibility, 
 Select React, Next.js, JavaScript or Web Component in the playground. Each guide contains the pinned install command, complete component/layout example and restaurant setup steps. React / Next.js support TypeScript TSX and JavaScript JSX output. JSX components are rendered in the React and Next.js previews; the Next.js preview is a browser preview of that same component, not an embedded Next.js server.
 
 `createIntegrationGuide({ restaurant, component, integration, codeLanguage })` from `@menueqr/widget/prompt` returns the install command, primary file, optional support file and notes. `createIntegrationPrompt` accepts the same `integration` choice; its AI instructions match the selected framework. The default for these helper functions remains `api` for compatibility.
+
+Explicit `icon`, `offsetX`, `offsetY` and `inlineHeight` values are preserved in
+generated code, including `false` and `0`. Custom-element guides use the matching
+`offset-x`, `offset-y` and `inline-height` attribute names. Runtime-only callbacks,
+CSP nonces and local fixture origins are not copied into setup prompts.
 
 ## Plain HTML without a bundler
 

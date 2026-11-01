@@ -43,6 +43,19 @@ export class FloatingDialog {
     return this.phase === 'closing';
   }
 
+  /** Loading and animation state belongs to one frame, including recovery retries. */
+  prepareFrame(): void {
+    if (this.phase === 'disposed') return;
+    this.revision++;
+    this.trustedReady = false;
+    delete this.dialog.dataset.loaded;
+    delete this.dialog.dataset.contentVisible;
+    delete this.dialog.dataset.closeReady;
+    this.closeControl.disabled = false;
+    this.closeControl.removeAttribute('aria-hidden');
+    this.dialog.setAttribute('aria-busy', 'true');
+  }
+
   position(): void {
     if (this.phase === 'disposed') return;
     const view = this.trigger.ownerDocument.defaultView;

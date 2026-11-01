@@ -7,3 +7,6 @@ This repository contains a browser integration SDK and a fictional local preview
 The SDK validates its configuration and iframe message origin/source, uses a sandboxed frame, and requires no private API key. Host websites remain responsible for their own CSP, privacy disclosures and safe handling of any data outside the widget.
 
 During the MVP stage, fixes target the latest published `0.x` release. Do not assume older releases receive backported fixes.
+
+Maintainer controls, immutable release tags, dependency monitoring and read-only
+service-contract checks are documented in [security controls](docs/security-controls.md).

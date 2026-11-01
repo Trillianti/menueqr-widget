@@ -156,6 +156,7 @@ class Instance implements ReservationWidget {
   ): void {
     const c = this.config;
     const copy = labels[c.language];
+    this.floatingDialog?.prepareFrame();
     const frame = this.doc.createElement('iframe');
     frame.inert = Boolean(this.buttonDialog || this.floatingDialog);
     this.frame = frame;
@@ -169,10 +170,12 @@ class Instance implements ReservationWidget {
       frame,
       fallbackContainer,
       c,
-      () => {
+      (error) => {
+        if (this.frame !== frame) return;
         this.drawer?.loaded();
         this.buttonDialog?.loaded();
         this.floatingDialog?.loaded();
+        this.notify(() => this.config.onLoadError?.(error));
       },
       () => {
         if (this.frame !== frame) return;
@@ -391,7 +394,7 @@ class Instance implements ReservationWidget {
       );
     const next = normalizeOptions({ ...this.config, ...input });
     const viewKeys = Object.keys(next).filter(
-      (key) => !['onOpen', 'onReady', 'onClose'].includes(key),
+      (key) => !['onOpen', 'onReady', 'onClose', 'onLoadError'].includes(key),
     );
     if (
       viewKeys.every(

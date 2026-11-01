@@ -45,7 +45,7 @@ jobs:
       - run: npm run test:e2e
 
   next:
-    name: Next.js copied layout
+    name: Next.js production consumer
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -58,3 +58,45 @@ jobs:
       - run: npm install --no-save --package-lock=false next@16.4.3
       - run: npx playwright install --with-deps chromium webkit
       - run: npm run test:next
+
+  react18:
+    name: React 18 consumer
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm install --no-save --package-lock=false react@18.3.1 react-dom@18.3.1 @types/react@18.3.31 @types/react-dom@18.3.7
+      - run: npm run build
+      - run: node scripts/check-package.mjs && node scripts/check-consumer-types.mjs
+      - run: npx playwright install --with-deps chromium webkit
+      - run: npm run test:e2e -- tests/browser/components.spec.ts tests/browser/widget.spec.ts --grep 'React' --project=chromium --project=mobile-webkit
+
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm audit --audit-level=high
+
+  dependency-review:
+    name: Dependency review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          fail-on-severity: high
+          comment-summary-in-pr: never

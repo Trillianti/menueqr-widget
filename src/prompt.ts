@@ -6,7 +6,7 @@ export const packageManagers = ['npm', 'pnpm', 'yarn', 'bun'] as const;
 export type PackageManager = (typeof packageManagers)[number];
 export type IntegrationPromptOptions = Omit<
   ReservationComponentOptions,
-  'baseUrl' | 'nonce' | 'onOpen' | 'onReady' | 'onClose'
+  'baseUrl' | 'nonce' | 'onOpen' | 'onReady' | 'onClose' | 'onLoadError'
 > & {
   component?: WidgetMode;
   integration?: IntegrationTarget;
@@ -60,6 +60,10 @@ function configuration(input: IntegrationPromptOptions) {
       side: c.side,
       mobile: c.mobile,
       ...(c.label ? { label: c.label } : {}),
+      ...(input.icon !== undefined ? { icon: c.icon } : {}),
+      ...(input.offsetX !== undefined ? { offsetX: c.offsetX } : {}),
+      ...(input.offsetY !== undefined ? { offsetY: c.offsetY } : {}),
+      ...(input.inlineHeight !== undefined ? { inlineHeight: c.inlineHeight } : {}),
     },
   };
 }
@@ -70,13 +74,12 @@ export function integrationSnippet(input: IntegrationPromptOptions): string {
 }
 function jsx(input: IntegrationPromptOptions, indent: number): string {
   const { component, options } = configuration(input);
+  const { side, mobile, label, ...shared } = options;
   const props = {
-    restaurant: options.restaurant,
-    language: options.language,
-    color: options.color,
-    ...(['floating', 'tab'].includes(component) ? { side: options.side } : {}),
-    ...(!options.mobile ? { mobile: false } : {}),
-    ...(options.label ? { label: options.label } : {}),
+    ...shared,
+    ...(['floating', 'tab'].includes(component) ? { side } : {}),
+    ...(!mobile ? { mobile: false } : {}),
+    ...(label ? { label } : {}),
   };
   const space = ' '.repeat(indent);
   const attributes = Object.entries(props)
@@ -115,7 +118,10 @@ export function elementMarkupSnippet(input: IntegrationPromptOptions): string {
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
   const attributes = Object.entries(options)
-    .map(([key, value]) => `  ${key}="${escape(String(value))}"`)
+    .map(([key, value]) => {
+      const attribute = key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
+      return `  ${attribute}="${escape(String(value))}"`;
+    })
     .join('\n');
   return `<menueqr-reservation-${component}\n${attributes}\n></menueqr-reservation-${component}>`;
 }

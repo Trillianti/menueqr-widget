@@ -1,5 +1,5 @@
 import { labels, recoveryLabels } from './copy.js';
-import type { WidgetConfiguration } from './types.js';
+import type { FrameLoadError, WidgetConfiguration } from './types.js';
 
 /** Diagnose a missing trusted handshake without changing iframe permissions. */
 export class FrameRecovery {
@@ -16,7 +16,7 @@ export class FrameRecovery {
     private readonly frame: HTMLIFrameElement,
     private readonly container: HTMLElement,
     private readonly config: WidgetConfiguration,
-    private readonly onFailure: () => void,
+    private readonly onFailure: (error: FrameLoadError) => void,
     private readonly onRetry: () => void,
   ) {
     const doc = container.ownerDocument;
@@ -29,7 +29,7 @@ export class FrameRecovery {
     this.fallback.textContent = labels[config.language].fallback;
     container.append(this.fallback);
     this.checkTimer = this.view.setTimeout(() => void this.check(), 2000);
-    this.deadline = this.view.setTimeout(() => this.show(false), 7000);
+    this.deadline = this.view.setTimeout(() => this.show('timeout'), 7000);
   }
 
   loaded(): void {
@@ -58,8 +58,8 @@ export class FrameRecovery {
       if (!response.ok) return;
       const result: unknown = await response.json();
       if (!result || typeof result !== 'object' || !('status' in result)) return;
-      if (result.status === 'origin_not_allowed') this.show(true);
-      else if (result.status === 'unavailable') this.show(false);
+      if (result.status === 'origin_not_allowed') this.show('origin_not_allowed');
+      else if (result.status === 'unavailable') this.show('unavailable');
     } catch {
       // Offline, host connect-src restrictions and older services use the neutral timeout.
     } finally {
@@ -67,8 +67,9 @@ export class FrameRecovery {
     }
   }
 
-  private show(blocked: boolean): void {
+  private show(code: FrameLoadError['code']): void {
     if (this.phase !== 'pending') return;
+    const blocked = code === 'origin_not_allowed';
     this.phase = 'failed';
     this.view.clearTimeout(this.deadline);
     const doc = this.container.ownerDocument;
@@ -110,8 +111,9 @@ export class FrameRecovery {
     }
     this.panel = panel;
     this.frame.hidden = true;
-    this.onFailure();
     this.container.append(panel);
+    // Append before notifying: the callback can destroy or update the widget.
+    this.onFailure({ code });
   }
 
   ready(): void {
