@@ -136,8 +136,8 @@
     "check:hosted": "node scripts/check-hosted-contract.mjs"
   },
   "devDependencies": {
-    "@playwright/test": "1.64.1",
-    "@types/node": "^24.0.0",
+    "@playwright/test": "1.65.0",
+    "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "esbuild": "0.28.2",
@@ -145,8 +145,8 @@
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "typescript": "7.0.2",
-    "vite": "8.3.5",
-    "vitest": "5.0.5",
+    "vite": "8.3.6",
+    "vitest": "5.1.0",
     "vue": "^3.5.44"
   },
   "publishConfig": {
